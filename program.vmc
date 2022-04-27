@@ -1,7 +1,5 @@
 push 5
-push 0
-load 1
-lt
+load 0
 jz 8
 load 0
 cout
@@ -9,5 +7,5 @@ load 0
 push 1
 sub
 str 1
-jmp -10
+jmp -8
 stop

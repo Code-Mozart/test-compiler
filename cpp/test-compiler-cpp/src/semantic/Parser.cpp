@@ -116,15 +116,14 @@ ref<Statement> Parser::ParseStatement(const vector<Token>& tokens, int& index)
 				return nullptr;
 			}
 
-			const Token& binOpTkn = tokens[index + 1];
-			auto expr = ParseExpression(tokens, index);
-			if (!expr) return nullptr;
-			if (expr->GetType() != Type::BinOp) {
-				errh.PushErr("expected a binary operator", binOpTkn);
+			const Token& condTkn = tokens[index + 1];
+			auto cond = ParseExpression(tokens, index);
+			if (!cond) return nullptr;
+			if (!cond->IsType(Type::Expression)) {
+				errh.PushErr("expected an expression", condTkn);
 				return nullptr;
 			}
-			auto cond = std::static_pointer_cast<BinaryOperator>(expr);
-
+			
 			const Token& lbraceTkn = tokens[index++];
 			if (lbraceTkn.type != TokenType::LBrace) {
 				errh.PushErr("expected a '{'", lbraceTkn);
@@ -163,14 +162,13 @@ ref<Statement> Parser::ParseStatement(const vector<Token>& tokens, int& index)
 				return nullptr;
 			}
 
-			const Token& binOpTkn = tokens[index + 1];
-			auto expr = ParseExpression(tokens, index);
-			if (!expr) return nullptr;
-			if (expr->GetType() != Type::BinOp) {
-				errh.PushErr("expected a binary operator", binOpTkn);
+			const Token& condTkn = tokens[index + 1];
+			auto cond = ParseExpression(tokens, index);
+			if (!cond) return nullptr;
+			if (!cond->IsType(Type::Expression)) {
+				errh.PushErr("expected an expression", condTkn);
 				return nullptr;
 			}
-			auto cond = std::static_pointer_cast<BinaryOperator>(expr);
 
 			const Token& lbraceTkn = tokens[index++];
 			if (lbraceTkn.type != TokenType::LBrace) {

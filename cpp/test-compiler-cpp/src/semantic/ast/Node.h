@@ -8,15 +8,13 @@ namespace AST {
 	class Node {
 	public:
 		virtual Type GetType() const = 0;
-		inline virtual string ToString() const {
-			return ToString("pos") + " " + AST::ToString(GetType());
+		virtual bool IsType(Type type) const {
+			return ((short)type) & ((short)GetType());
 		}
-		inline virtual string ToString(const string& tag) const {
-			if (tag == "pos") return filepath + ":" + std::to_string(line) + "," + std::to_string(pos);
-			else return "";
-		}
-		inline virtual string TreeToString(byte indent = 0) const {
-			return GetIndentString(indent) + Node::ToString();
+		inline virtual string ToString(byte indent = 0) const {
+			return GetIndentString(indent) + filepath + ":"
+				+ std::to_string(line) + "," + std::to_string(pos) + " "
+				+ AST::ToString(GetType()) + "\n";
 		}
 	protected:
 		inline static string GetIndentString(byte indent) {

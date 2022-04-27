@@ -7,15 +7,13 @@ namespace AST {
 
 	class BinaryOperator : public Expression {
 	public:
-		inline virtual Type GetType() const override { return Type::BinOp; }
-		inline virtual string ToString() const override {
-			return Node::ToString() + "\n\t" + (char)op
-				+ "\n" + lhs->ToString() + rhs->ToString();
+		inline virtual Type GetType() const override {
+			return Type::BinOp;
 		}
-		inline virtual string TreeToString(byte indent = 0) const {
-			return Node::TreeToString(indent) + "\n"
+		inline virtual string ToString(byte indent = 0) const {
+			return Node::ToString(indent)
 				+ GetIndentString(indent + 1) + (char)op + "\n"
-				+ lhs->TreeToString(indent + 1) + rhs->TreeToString(indent + 1);
+				+ lhs->ToString(indent + 1) + rhs->ToString(indent + 1);
 		}
 	public:
 		ASTOperator op;

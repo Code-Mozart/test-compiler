@@ -23,7 +23,7 @@
 
 var x = 5;
 
-while (0 < x) {
+while (x) {
 	print(x);
 	x = x - 1;
 }

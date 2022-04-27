@@ -6,12 +6,11 @@ namespace AST {
 
 	class BuiltIn : public Node {
 	public:
-		inline virtual Type GetType() const override { return Type::BuiltIn; }
-		inline virtual string ToString() const override {
-			return AST::ToString(GetType());
+		inline virtual Type GetType() const override {
+			return Type::BuiltIn;
 		}
-		inline virtual string TreeToString(byte indent = 0) const {
-			return Node::ToString() + "\n";
+		inline virtual string ToString(byte indent = 0) const {
+			return Node::ToString(indent);
 		}
 	};
 

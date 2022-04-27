@@ -7,18 +7,13 @@ namespace AST {
 
 	class Declaration : public Statement {
 	public:
-		inline virtual Type GetType() const override { return Type::Declaration; }
-		inline virtual string ToString() const override {
-			return Node::ToString() + "\n\t" + identifier + "\n" + value->ToString();
+		inline virtual Type GetType() const override {
+			return Type::Declaration;
 		}
-		inline virtual string ToString(const string& tag) const {
-			if (tag == "identifier") return identifier;
-			else return Statement::ToString(tag);
-		}
-		inline virtual string TreeToString(byte indent = 0) const {
-			return Node::TreeToString(indent) + "\n"
+		inline virtual string ToString(byte indent = 0) const {
+			return Node::ToString(indent)
 				+ GetIndentString(indent + 1) + identifier + "\n"
-				+ value->TreeToString(indent + 1);
+				+ value->ToString(indent + 1);
 		}
 	public:
 		string identifier;

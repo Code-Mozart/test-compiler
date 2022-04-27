@@ -70,7 +70,7 @@ int main(int argc, char** argv) {
 			}
 			else {
 				errh.PushInfo("Built AST", path);
-				printf("%s\n", root->TreeToString().c_str());
+				printf("%s\n", root->ToString().c_str());
 				
 				// create symbol table and fill in built-in symbols
 				SymbolTable symbols;

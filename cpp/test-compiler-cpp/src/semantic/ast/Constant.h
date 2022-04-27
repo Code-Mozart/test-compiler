@@ -6,12 +6,11 @@ namespace AST {
 
 	class Constant : public Expression {
 	public:
-		inline virtual Type GetType() const override { return Type::Const; }
-		inline virtual string ToString() const override {
-			return Node::ToString() + "\n\t" + std::to_string(value) + "\n";
+		inline virtual Type GetType() const override {
+			return Type::Const;
 		}
-		inline virtual string TreeToString(byte indent = 0) const {
-			return Node::TreeToString(indent) + "\n"
+		inline virtual string ToString(byte indent = 0) const {
+			return Node::ToString(indent)
 				+ GetIndentString(indent + 1) + std::to_string(value) + "\n";
 		}
 	public:
