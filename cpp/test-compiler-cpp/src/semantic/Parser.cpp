@@ -61,6 +61,7 @@ Keyword Parser::ParseKeyword(const string& s) {
 	return Keyword::None;
 }
 
+// @refactor: remove identifier shadowing
 ref<Statement> Parser::ParseStatement(const vector<Token>& tokens, int& index)
 {
 	const Token& t = tokens[index++];
@@ -133,6 +134,8 @@ ref<Statement> Parser::ParseStatement(const vector<Token>& tokens, int& index)
 			auto whileStm = CreateNode<While>(t);
 			whileStm->condition = cond;
 
+			// @refactor: replace with call to ParseSequence()
+			whileStm->body = CreateNode<Sequence>(lbraceTkn);
 			while (tokens[index].type != TokenType::RBrace) {
 				if (index + 1 >= tokens.size()) {
 					errh.PushErr("unexpected EOF, expected a '}'", tokens.back());
@@ -141,7 +144,7 @@ ref<Statement> Parser::ParseStatement(const vector<Token>& tokens, int& index)
 
 				auto stm = ParseStatement(tokens, index);
 				if (!stm) return nullptr;
-				whileStm->body.emplace_back(stm);
+				whileStm->body->statements.emplace_back(stm);
 			}
 			// consume rbrace
 			index++;
@@ -179,6 +182,8 @@ ref<Statement> Parser::ParseStatement(const vector<Token>& tokens, int& index)
 			auto ifStm = CreateNode<IfElse>(t);
 			ifStm->condition = cond;
 
+			// @refactor: replace with call to ParseSequence()
+			ifStm->ifBody = CreateNode<Sequence>(lbraceTkn);
 			while (tokens[index].type != TokenType::RBrace) {
 				if (index + 1 >= tokens.size()) {
 					errh.PushErr("unexpected EOF, expected a '}'", tokens.back());
@@ -187,7 +192,7 @@ ref<Statement> Parser::ParseStatement(const vector<Token>& tokens, int& index)
 
 				auto stm = ParseStatement(tokens, index);
 				if (!stm) return nullptr;
-				ifStm->ifBody.emplace_back(stm);
+				ifStm->ifBody->statements.emplace_back(stm);
 			}
 			// consume rbrace
 			index++;
@@ -209,6 +214,8 @@ ref<Statement> Parser::ParseStatement(const vector<Token>& tokens, int& index)
 					return nullptr;
 				}
 
+				// @refactor: replace with call to ParseSequence()
+				ifStm->elseBody = CreateNode<Sequence>(lbraceTkn);
 				while (tokens[index].type != TokenType::RBrace) {
 					if (index + 1 >= tokens.size()) {
 						errh.PushErr("unexpected EOF, expected a '}'", tokens.back());
@@ -217,7 +224,7 @@ ref<Statement> Parser::ParseStatement(const vector<Token>& tokens, int& index)
 
 					auto stm = ParseStatement(tokens, index);
 					if (!stm) return nullptr;
-					ifStm->elseBody.emplace_back(stm);
+					ifStm->elseBody->statements.emplace_back(stm);
 				}
 				// consume rbrace
 				index++;

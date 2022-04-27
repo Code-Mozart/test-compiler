@@ -13,13 +13,12 @@ namespace AST {
 		inline virtual string ToString(byte indent = 0) const {
 			string s = Node::ToString(indent)
 				+ condition->ToString(indent + 1);
-			for (const auto& stm : body)
-				s += stm->ToString(indent + 1);
+			s += body->ToString(indent + 1);
 			return s;
 		}
 	public:
 		ref<Expression> condition;
-		vector<ref<Statement>> body;
+		ref<Sequence> body;
 	};
 
 }

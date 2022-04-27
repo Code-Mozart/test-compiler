@@ -61,7 +61,8 @@ bool Analyzer::ValidateAST(ref<Node> node, SymbolTable* pSymbols) {
 			return false;
 
 		SymbolTable subTable = SymbolTable(pSymbols);
-		for (const auto& stm : whileStm.body) {
+		// @refactor: replace with ValidateAST(whileStm.body)
+		for (const auto& stm : whileStm.body->statements) {
 			if (!ValidateAST(stm, &subTable))
 				return false;
 		}
@@ -75,15 +76,19 @@ bool Analyzer::ValidateAST(ref<Node> node, SymbolTable* pSymbols) {
 			return false;
 
 		SymbolTable subTableIf = SymbolTable(pSymbols);
-		for (const auto& stm : ifStm.ifBody) {
+		// @refactor: replace with ValidateAST(ifStm.ifBody)
+		for (const auto& stm : ifStm.ifBody->statements) {
 			if (!ValidateAST(stm, &subTableIf))
 				return false;
 		}
 
-		SymbolTable subTableElse = SymbolTable(pSymbols);
-		for (const auto& stm : ifStm.elseBody) {
-			if (!ValidateAST(stm, &subTableElse))
-				return false;
+		if (ifStm.elseBody) {
+			SymbolTable subTableElse = SymbolTable(pSymbols);
+			// @refactor: replace with ValidateAST(ifStm.elseBody)
+			for (const auto& stm : ifStm.elseBody->statements) {
+				if (!ValidateAST(stm, &subTableElse))
+					return false;
+			}
 		}
 
 		return true;

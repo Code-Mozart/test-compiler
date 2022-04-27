@@ -19,6 +19,7 @@ namespace AST {
 		}
 	public:
 		string identifier;
+		// @later: introduce an ArgList node
 		vector<ref<Expression>> args;
 	};
 

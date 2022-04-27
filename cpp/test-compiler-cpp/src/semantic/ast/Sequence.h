@@ -5,6 +5,7 @@
 
 namespace AST {
 
+	// @overhaul: replace with Block node inheriting from statement
 	class Sequence : public Node {
 	public:
 		inline virtual Type GetType() const override {

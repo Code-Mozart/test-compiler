@@ -13,18 +13,16 @@ namespace AST {
 		inline virtual string ToString(byte indent = 0) const {
 			string s = Node::ToString(indent)
 				+ condition->ToString(indent + 1);
-			s += GetIndentString(indent + 1) + "IF BODY\n";
-			for (const auto& stm : ifBody)
-				s += stm->ToString(indent + 2);
-			s += GetIndentString(indent + 1) + "ELSE BODY\n";
-			for (const auto& stm : elseBody)
-				s += stm->ToString(indent + 2);
+			// ifBody must never be null
+			s += ifBody->ToString(indent + 1);
+			if (elseBody)
+				s += elseBody->ToString(indent + 1);
 			return s;
 		}
 	public:
 		ref<Expression> condition;
-		vector<ref<Statement>> ifBody;
-		vector<ref<Statement>> elseBody;
+		ref<Sequence> ifBody;
+		ref<Sequence> elseBody;
 	};
 
 }

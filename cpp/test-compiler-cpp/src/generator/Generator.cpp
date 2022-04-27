@@ -60,7 +60,8 @@ vector<Instruction>& CodeGenerator::Generate(ref<Node> node, vector<Instruction>
 		// shrink stack as if the condition result had been processed already
 		stack.Shrink();
 		stack.EnterScope(node);
-		for (const auto& stm : whileStm.body) {
+		// @refactor: replace with Generate(whileStm.body)
+		for (const auto& stm : whileStm.body->statements) {
 			Generate(stm, bodyInstructions, stack);
 		}
 		byte popCount = stack.ExitScope();
@@ -87,7 +88,8 @@ vector<Instruction>& CodeGenerator::Generate(ref<Node> node, vector<Instruction>
 		// shrink stack as if the condition result had been processed already
 		stack.Shrink();
 		stack.EnterScope(node);
-		for (const auto& stm : ifStm.ifBody) {
+		// @refactor: replace with Generate(ifStm.ifBody)
+		for (const auto& stm : ifStm.ifBody->statements) {
 			Generate(stm, ifBodyInstructions, stack);
 		}
 		byte popCount = stack.ExitScope();
@@ -99,17 +101,18 @@ vector<Instruction>& CodeGenerator::Generate(ref<Node> node, vector<Instruction>
 		// additionally jump over the JMP instruction at the end of the if body
 		instructions.emplace_back(Instruction{
 			Operation::JumpIf0,
-			(short)(ifBodyInstructions.size() + 1 + !ifStm.elseBody.empty())
+			(short)(ifBodyInstructions.size() + 1 + (ifStm.elseBody != nullptr))
 			});
 		stack.Shrink();
 		for (const auto& instr : ifBodyInstructions)
 			instructions.emplace_back(instr);
 
 		// @later: replace with null check to scope/sequence
-		if (!ifStm.elseBody.empty()) {
+		if (ifStm.elseBody) {
 			vector<Instruction> elseBodyInstructions;
 			stack.EnterScope(node);
-			for (const auto& stm : ifStm.elseBody) {
+			// @refactor: replace with Generate(ifStm.elseBody)
+			for (const auto& stm : ifStm.elseBody->statements) {
 				Generate(stm, elseBodyInstructions, stack);
 			}
 			byte popCount = stack.ExitScope();
