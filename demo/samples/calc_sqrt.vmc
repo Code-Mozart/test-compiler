@@ -1,0 +1,43 @@
+push 32767
+load 0
+push 10000
+div
+load 1
+push 1000
+div
+load 1
+push -10
+mul
+sub
+load 2
+push 100
+div
+load 1
+push -10
+mul
+sub
+load 2
+push -100
+mul
+sub
+load 2
+cout
+load 1
+cout
+load 0
+cout
+load 3
+push 1000
+div
+cout
+load 2
+push 10
+mul
+cout
+push 3
+push 0
+push -2
+sub
+add
+cout
+stop

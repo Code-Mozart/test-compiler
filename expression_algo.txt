@@ -1,0 +1,37 @@
+
+[EXPRESSION]
+sin ( max ( 2 , 3 ) ÷ 3 × pi )
+
+[AST]
+call
+	ident = 'sin'
+	args =
+		multiply
+			divide
+				call
+					ident = 'max'
+					args =
+						2
+						3
+				3
+			pi
+
+[ALGORITHM]
+TOKEN	VAL STACK					OP STACK
+sin									sin
+(									(, sin
+max									max, (, sin
+(									(, max, (, sin
+2		2							(, max, (, sin
+,			                        
+3		2, 3						(, max, (, sin
+)		2, 3						max, (, sin
+÷		2, 3, max					(, sin
+		2, 3, max					÷, (, sin
+3		2, 3, max, 3				÷, (, sin
+×		2, 3, max, ÷				(, sin
+		2, 3, max, ÷				×, (, sin
+pi		2, 3, max, ÷				pi, ×, (, sin
+		2, 3, max, ÷, pi			×, (, sin
+)		2, 3, max, ÷, pi, ×			sin
+		2, 3, max, ÷, pi, ×, sin

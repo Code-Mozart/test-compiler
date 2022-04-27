@@ -1,0 +1,29 @@
+
+// // INTRODUCING PROCEDURES
+// 
+// // all procedures are void and may not take arguments
+// 
+// proc print123() {
+// 	print(1);
+// 	print(2);
+// 	print(3);
+// }
+// 
+// // main is reserved as the entry point
+// proc main() {
+// 	print123();
+// }
+// 
+// // for now code outside main() is compiled
+// // but never executed
+//
+
+
+// FOR REFACTORING
+
+var x = 5;
+
+while (0 < x) {
+	print(x);
+	x = x - 1;
+}

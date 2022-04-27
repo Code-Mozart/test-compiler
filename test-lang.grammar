@@ -1,0 +1,76 @@
+
+version: 2022-04-18
+
+*
+optional loop
+	[statement]
+(EOF)
+x
+
+------------------------------------------------------------------
+
+[statement]=
+case 'single'
+	case 'declaration'
+		("var")
+		(IDENTIFIER)
+		("=")
+		[expression]
+	or 'assignment'
+		(IDENTIFIER)
+		("=")
+		[expression]
+	or 'call'
+		(IDENTIFIER)
+		("(")
+		[expression]
+		(")")
+	(";")
+or 'while'
+	("while")
+	("(")
+	[binary operator]
+	(")")
+	("{")
+	optional loop
+		[statement]
+	("}")
+or 'if'
+	("if")
+	("(")
+	[binary operator]
+	(")")
+	("{")
+	optional loop
+		[statement]
+	("}")
+
+------------------------------------------------------------------
+
+[expression]=
+case 'literal'
+	(LITERAL)
+or 'variable'
+	(VARIABLE)
+or
+	[binary operator]
+or 'parenthesis'
+	("(")
+	[expression]
+	(")")
+	
+-------------------------------------------------------------------
+
+[binary operator]=
+[expression]
+case
+	("<")
+or
+	("+")
+or
+	("-")
+or
+	("*")
+or
+	("/")
+[expression]

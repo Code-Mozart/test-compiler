@@ -1,0 +1,18 @@
+push 1
+push 1
+load 1
+push 8
+lt
+jz 12
+load 0
+load 2
+mul
+str 1
+load 1
+push 1
+add
+str 2
+load 0
+cout
+jmp -14
+stop
