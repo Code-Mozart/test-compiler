@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Exception.h"
-#include "ErrorHandler.h"
+#include "errh/ErrorHandler.h"
 #include "syntax/Token.h"
 #include "semantic/ast/include.h"
 #include "semantic/Keywords.h"
@@ -19,6 +19,8 @@ private:
 
 	template<typename T>
 	ref<T> CreateNode(const Token& tkn);
+
+	void PushErr(const string& text, const Token& tkn);
 private:
 	ErrorHandler& errh;
 };

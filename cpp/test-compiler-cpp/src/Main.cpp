@@ -2,7 +2,7 @@
 #include <string>
 
 #include "Exception.h"
-#include "ErrorHandler.h"
+#include "errh/ErrorHandler.h"
 #include "io/FileHandler.h"
 #include "syntax/Lexer.h"
 #include "semantic/Parser.h"
@@ -17,22 +17,21 @@ void PrintException(const string& msg) {
 	printf((string("EXCEPTION ") + msg).c_str());
 }
 
-const char* ToString(Severity s) {
-	switch (s) {
-	case Severity::Info:	return "[i]";
-	case Severity::Warning:	return "/!\\";
-	case Severity::Error:	return "(x)";
-	}
-	return "error";
-}
-
 void PrintMessages(const ErrorHandler& errh) {
 	for (const auto& m : errh) {
-		if (m.filepath.empty()) {
-			printf("%s %s\n", ToString(m.severity), m.text.c_str());
+		if (!m.IsAboutFile()) {
+			printf("%s %s\n", ToString(m.severity).c_str(), m.text.c_str());
+		}
+		else if (!m.IsAboutLine()) {
+			printf("%s %s %s\n", ToString(m.severity).c_str(), m.filepath.c_str(), m.text.c_str());
+		}
+		else if (!m.IsAboutPos()) {
+			printf("%s %s:%d %s\n", ToString(m.severity).c_str(), m.filepath.c_str(),
+				m.line, m.text.c_str());
 		}
 		else {
-			printf("%s %s:%d,%d %s\n", ToString(m.severity), m.filepath.c_str(), m.line, m.pos, m.text.c_str());
+			printf("%s %s:%d,%d %s\n", ToString(m.severity).c_str(), m.filepath.c_str(),
+				m.line, m.pos, m.text.c_str());
 		}
 	}
 }

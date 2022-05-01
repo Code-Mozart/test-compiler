@@ -1,5 +1,5 @@
 
-version: 2022-04-18
+version: 2022-04-29
 
 *
 optional loop
@@ -29,7 +29,7 @@ case 'single'
 or 'while'
 	("while")
 	("(")
-	[binary operator]
+	[expression]
 	(")")
 	("{")
 	optional loop
@@ -38,7 +38,7 @@ or 'while'
 or 'if'
 	("if")
 	("(")
-	[binary operator]
+	[expression]
 	(")")
 	("{")
 	optional loop

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "util/Util.h"
+#include "Common.h"
 #include "semantic/ast/ASTType.h"
 
 namespace AST {
@@ -23,9 +24,9 @@ namespace AST {
 			return s;
 		}
 	public:
-		string filepath;
-		ulong line;
-		ulong pos;
+		string filepath = NoFile;
+		ulong line = NoLine;
+		ulong pos = NoPos;
 	};
 
 }

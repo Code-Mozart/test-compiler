@@ -11,6 +11,10 @@ inline static bool IsInt(char c) { return (c >= '0' && c <= '9'); }
 inline static bool IsValidFirstChar(char c) { return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_'; }
 inline static bool IsValidChar(char c) { return IsValidFirstChar(c) || IsInt(c); }
 
+void Lexer::PushErr(const string& text, const string& filepath, ulong line, ulong pos) {
+	errh.PushErr(text, filepath, line, pos);
+}
+
 vector<Token> Lexer::Tokenize(const FileInfo& srcFile) {
 	vector<Token> tokens;
 	const string& src = srcFile.content;
@@ -52,7 +56,7 @@ vector<Token> Lexer::Tokenize(const FileInfo& srcFile) {
 		else if (c == '/')
 		{
 			if (i >= src.size() - 1) {
-				errh.PushErr("unexpected EOF", srcFile.filename, line, pos);
+				PushErr("unexpected EOF", srcFile.filename, line, pos);
 				return {};
 			}
 			else if (src[i + 1] == '/')
@@ -167,7 +171,7 @@ vector<Token> Lexer::Tokenize(const FileInfo& srcFile) {
 				}
 				else
 				{
-					errh.PushErr("illegal char", srcFile.filename, line, pos);
+					PushErr("illegal char", srcFile.filename, line, pos);
 					return {};
 				}
 			}

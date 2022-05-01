@@ -1,5 +1,7 @@
 #include "ASTType.h"
 
+#include "Exception.h"
+
 namespace AST {
 	
 	string ToString(Type t)
@@ -20,7 +22,7 @@ namespace AST {
 		case Type::BinOp:		return "BinOp";
 		case Type::Var:			return "Var";
 		}
-		return "error";
+		throw IncorrectImplException(__FILE__, __LINE__, "enum case not handled");
 	}
 
 }

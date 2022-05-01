@@ -2,7 +2,7 @@
 
 #include "Token.h"
 #include "Exception.h"
-#include "ErrorHandler.h"
+#include "errh/ErrorHandler.h"
 #include "io/FileInfo.h"
 
 class Lexer {
@@ -10,6 +10,8 @@ public:
 	Lexer(ErrorHandler& errh) : errh(errh) {}
 public:
 	vector<Token> Tokenize(const FileInfo& srcFile);
+private:
+	void PushErr(const string& text, const string& filepath, ulong line, ulong pos);
 private:
 	ErrorHandler& errh;
 };

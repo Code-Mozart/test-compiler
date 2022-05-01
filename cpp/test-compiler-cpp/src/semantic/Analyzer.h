@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ErrorHandler.h"
+#include "errh/ErrorHandler.h"
 #include "semantic/ast/include.h"
 #include "semantic/SymbolTable.h"
 

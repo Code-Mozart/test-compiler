@@ -29,26 +29,26 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -159,7 +159,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="src\ErrorHandler.cpp" />
+    <ClCompile Include="src\errh\ErrorHandler.cpp" />
+    <ClCompile Include="src\errh\Message.cpp" />
     <ClCompile Include="src\generator\RuntimeStack.cpp" />
     <ClCompile Include="src\semantic\Analyzer.cpp" />
     <ClCompile Include="src\semantic\ast\ASTType.cpp" />
@@ -172,6 +173,7 @@
     <ClCompile Include="src\semantic\SymbolTable.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="src\Common.h" />
     <ClInclude Include="src\generator\Instruction.h" />
     <ClInclude Include="src\generator\RuntimeStack.h" />
     <ClInclude Include="src\io\FileInfo.h" />
@@ -195,8 +197,8 @@
     <ClInclude Include="src\semantic\ast\While.h" />
     <ClInclude Include="src\Exception.h" />
     <ClInclude Include="src\io\FileHandler.h" />
-    <ClInclude Include="src\Message.h" />
-    <ClInclude Include="src\ErrorHandler.h" />
+    <ClInclude Include="src\errh\Message.h" />
+    <ClInclude Include="src\errh\ErrorHandler.h" />
     <ClInclude Include="src\semantic\Keywords.h" />
     <ClInclude Include="src\syntax\Lexer.h" />
     <ClInclude Include="src\semantic\Parser.h" />

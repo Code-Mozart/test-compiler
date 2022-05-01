@@ -1,11 +1,68 @@
 push 5
+push 14332
 load 0
-jz 8
-load 0
+push 10000
+div
+load 1
+push 1000
+div
+load 1
+push 10
+mul
+sub
+load 2
+push 100
+div
+load 1
+push 10
+mul
+sub
+load 2
+push 100
+mul
+sub
+load 3
+push 10
+div
+load 1
+push 10
+mul
+sub
+load 2
+push 100
+mul
+sub
+load 3
+push 1000
+mul
+sub
+load 4
+load 1
+push 10
+mul
+sub
+load 2
+push 100
+mul
+sub
+load 3
+push 1000
+mul
+sub
+load 4
+push 10000
+mul
+sub
+load 5
+cout
+load 4
+cout
+load 3
+cout
+load 2
+cout
+load 1
 cout
 load 0
-push 1
-sub
-str 1
-jmp -8
+cout
 stop

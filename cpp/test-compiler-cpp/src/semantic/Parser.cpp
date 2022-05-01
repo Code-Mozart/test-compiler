@@ -10,8 +10,9 @@ static byte GetOpPrecedence(const char op) {
 
 	case '+':	return 2;
 	case '-':	return 2;
-	case '*':	return 2;
-	case '/':	return 2;
+
+	case '*':	return 3;
+	case '/':	return 3;
 	}
 	return -1;
 }
@@ -35,6 +36,11 @@ static bool HasHigherPrecedence(const Token& op1, const Token& op2) {
 	byte op2Prec = GetOpPrecedence(op2.text[0]);
 
 	return (op1Prec < op2Prec) || (op1Prec == op2Prec && IsLeftAsociative(op1.text[0]));
+}
+
+
+void Parser::PushErr(const string& text, const Token& tkn) {
+	errh.PushErr(text, tkn);
 }
 
 
@@ -73,19 +79,19 @@ ref<Statement> Parser::ParseStatement(const vector<Token>& tokens, int& index)
 			// declarations are at least 5 tokens
 			// @fix: if the expression is more than 1 token, this doesnt ensure that index++ will not throw
 			if (index + 3 >= tokens.size()) {
-				errh.PushErr("incomplete declaration", t);
+				PushErr("incomplete declaration", t);
 				return nullptr;
 			}
 
 			const Token& identTkn = tokens[index++];
 			if (identTkn.type != TokenType::Identifier) {
-				errh.PushErr("expected an identifier", identTkn);
+				PushErr("expected an identifier", identTkn);
 				return nullptr;
 			}
 
 			const Token& opTkn = tokens[index++];
 			if (opTkn.type != TokenType::Operator || opTkn.text != "=") {
-				errh.PushErr("expected a '='", opTkn);
+				PushErr("expected a '='", opTkn);
 				return nullptr;
 			}
 
@@ -94,7 +100,7 @@ ref<Statement> Parser::ParseStatement(const vector<Token>& tokens, int& index)
 
 			const Token& semTkn = tokens[index++];
 			if (semTkn.type != TokenType::Semicolon) {
-				errh.PushErr("expected a ';'", semTkn);
+				PushErr("expected a ';'", semTkn);
 				return nullptr;
 			}
 
@@ -107,13 +113,13 @@ ref<Statement> Parser::ParseStatement(const vector<Token>& tokens, int& index)
 			// while stm are at least 5 tokens
 			// @fix: if the expression is more than 1 token, this doesnt ensure that index++ will not throw
 			if (index + 3 >= tokens.size()) {
-				errh.PushErr("incomplete while statement", t);
+				PushErr("incomplete while statement", t);
 				return nullptr;
 			}
 
 			const Token& lparenTkn = tokens[index];
 			if (lparenTkn.type != TokenType::LParen) {
-				errh.PushErr("expected a '('", lparenTkn);
+				PushErr("expected a '('", lparenTkn);
 				return nullptr;
 			}
 
@@ -121,13 +127,13 @@ ref<Statement> Parser::ParseStatement(const vector<Token>& tokens, int& index)
 			auto cond = ParseExpression(tokens, index);
 			if (!cond) return nullptr;
 			if (!cond->IsType(Type::Expression)) {
-				errh.PushErr("expected an expression", condTkn);
+				PushErr("expected an expression", condTkn);
 				return nullptr;
 			}
 			
 			const Token& lbraceTkn = tokens[index++];
 			if (lbraceTkn.type != TokenType::LBrace) {
-				errh.PushErr("expected a '{'", lbraceTkn);
+				PushErr("expected a '{'", lbraceTkn);
 				return nullptr;
 			}
 
@@ -138,7 +144,7 @@ ref<Statement> Parser::ParseStatement(const vector<Token>& tokens, int& index)
 			whileStm->body = CreateNode<Sequence>(lbraceTkn);
 			while (tokens[index].type != TokenType::RBrace) {
 				if (index + 1 >= tokens.size()) {
-					errh.PushErr("unexpected EOF, expected a '}'", tokens.back());
+					PushErr("unexpected EOF, expected a '}'", tokens.back());
 					return nullptr;
 				}
 
@@ -155,13 +161,13 @@ ref<Statement> Parser::ParseStatement(const vector<Token>& tokens, int& index)
 			// if stm are at least 5 tokens
 			// @fix: if the expression is more than 1 token, this doesnt ensure that index++ will not throw
 			if (index + 3 >= tokens.size()) {
-				errh.PushErr("incomplete if statement", t);
+				PushErr("incomplete if statement", t);
 				return nullptr;
 			}
 
 			const Token& lparenTkn = tokens[index];
 			if (lparenTkn.type != TokenType::LParen) {
-				errh.PushErr("expected a '('", lparenTkn);
+				PushErr("expected a '('", lparenTkn);
 				return nullptr;
 			}
 
@@ -169,13 +175,13 @@ ref<Statement> Parser::ParseStatement(const vector<Token>& tokens, int& index)
 			auto cond = ParseExpression(tokens, index);
 			if (!cond) return nullptr;
 			if (!cond->IsType(Type::Expression)) {
-				errh.PushErr("expected an expression", condTkn);
+				PushErr("expected an expression", condTkn);
 				return nullptr;
 			}
 
 			const Token& lbraceTkn = tokens[index++];
 			if (lbraceTkn.type != TokenType::LBrace) {
-				errh.PushErr("expected a '{'", lbraceTkn);
+				PushErr("expected a '{'", lbraceTkn);
 				return nullptr;
 			}
 
@@ -186,7 +192,7 @@ ref<Statement> Parser::ParseStatement(const vector<Token>& tokens, int& index)
 			ifStm->ifBody = CreateNode<Sequence>(lbraceTkn);
 			while (tokens[index].type != TokenType::RBrace) {
 				if (index + 1 >= tokens.size()) {
-					errh.PushErr("unexpected EOF, expected a '}'", tokens.back());
+					PushErr("unexpected EOF, expected a '}'", tokens.back());
 					return nullptr;
 				}
 
@@ -210,7 +216,7 @@ ref<Statement> Parser::ParseStatement(const vector<Token>& tokens, int& index)
 
 				const Token& lbraceTkn = tokens[index++];
 				if (lbraceTkn.type != TokenType::LBrace) {
-					errh.PushErr("expected a '{'", lbraceTkn);
+					PushErr("expected a '{'", lbraceTkn);
 					return nullptr;
 				}
 
@@ -218,7 +224,7 @@ ref<Statement> Parser::ParseStatement(const vector<Token>& tokens, int& index)
 				ifStm->elseBody = CreateNode<Sequence>(lbraceTkn);
 				while (tokens[index].type != TokenType::RBrace) {
 					if (index + 1 >= tokens.size()) {
-						errh.PushErr("unexpected EOF, expected a '}'", tokens.back());
+						PushErr("unexpected EOF, expected a '}'", tokens.back());
 						return nullptr;
 					}
 
@@ -250,7 +256,7 @@ ref<Statement> Parser::ParseStatement(const vector<Token>& tokens, int& index)
 
 				const Token& semTkn = tokens[index++];
 				if (semTkn.type != TokenType::Semicolon) {
-					errh.PushErr("expected a ';'", semTkn);
+					PushErr("expected a ';'", semTkn);
 					return nullptr;
 				}
 
@@ -260,7 +266,7 @@ ref<Statement> Parser::ParseStatement(const vector<Token>& tokens, int& index)
 				// assignment
 
 				if (nextTkn.text != "=") {
-					errh.PushErr("expected an '='", nextTkn);
+					PushErr("expected an '='", nextTkn);
 					return nullptr;
 				}
 
@@ -269,7 +275,7 @@ ref<Statement> Parser::ParseStatement(const vector<Token>& tokens, int& index)
 
 				const Token& semTkn = tokens[index++];
 				if (semTkn.type != TokenType::Semicolon) {
-					errh.PushErr("expected a ';'", semTkn);
+					PushErr("expected a ';'", semTkn);
 					return nullptr;
 				}
 
@@ -279,14 +285,14 @@ ref<Statement> Parser::ParseStatement(const vector<Token>& tokens, int& index)
 				return assignment;
 			}
 			else {
-				errh.PushErr("illegal token '" + t.ToString() + "'", t);
+				PushErr("illegal token '" + t.ToString() + "'", t);
 				return nullptr;
 			}
 		}
 		}
 	}
 	default: {
-		errh.PushErr("illegal token '" + t.ToString() + "', expected a statement", t);
+		PushErr("illegal token '" + t.ToString() + "', expected a statement", t);
 		return nullptr;
 	}
 	}
@@ -338,7 +344,7 @@ ref<Expression> Parser::ParseExpression(const vector<Token>& tokens, int& index)
 				opStack.pop_back();
 			}
 			if (opStack.empty()) {
-				errh.PushErr("mismatched parantheses", t);
+				PushErr("mismatched parantheses", t);
 				return nullptr;
 			}
 			opStack.pop_back();
@@ -350,7 +356,7 @@ ref<Expression> Parser::ParseExpression(const vector<Token>& tokens, int& index)
 			index--;
 			continue;
 		default:
-			errh.PushErr("unexpected token", t);
+			PushErr("unexpected token", t);
 			return nullptr;
 		}
 
@@ -358,7 +364,7 @@ ref<Expression> Parser::ParseExpression(const vector<Token>& tokens, int& index)
 		if (t.type != TokenType::LParen && t.type != TokenType::RParen) {
 			bool isOp = t.type == TokenType::Operator;
 			if (lastWasOp == isOp) {
-				errh.PushErr(lastWasOp ? "expected a value" : "expected an expression", t);
+				PushErr(lastWasOp ? "expected a value" : "expected an expression", t);
 				return nullptr;
 			}
 			lastWasOp = isOp;
@@ -366,7 +372,7 @@ ref<Expression> Parser::ParseExpression(const vector<Token>& tokens, int& index)
 	}
 	while (!opStack.empty()) {
 		if (opStack.back()->type == TokenType::LParen) {
-			errh.PushErr("mismatched parantheses", *opStack.back());
+			PushErr("mismatched parantheses", *opStack.back());
 			return nullptr;
 		}
 		outQueue.emplace_back(opStack.back());
@@ -394,7 +400,7 @@ ref<Expression> Parser::BuildExpression(vector<const Token*>& outQueue)
 	}
 	case TokenType::Operator: {
 		if (outQueue.size() < 2) {
-			errh.PushErr("expected an expression", t);
+			PushErr("expected an expression", t);
 			return nullptr;
 		}
 		auto binOp = CreateNode<BinaryOperator>(t);
@@ -408,7 +414,7 @@ ref<Expression> Parser::BuildExpression(vector<const Token*>& outQueue)
 		return binOp;
 	}
 	}
-	errh.PushErr("illegal token in expression", t);
+	PushErr("illegal token in expression", t);
 	return nullptr;
 }
 
