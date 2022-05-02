@@ -300,123 +300,94 @@ ref<Statement> Parser::ParseStatement(const vector<Token>& tokens, int& index)
 	throw ParseException(t);
 }
 
-ref<Expression> Parser::ParseExpression(const vector<Token>& tokens, int& index)
-{
-	// implementation of the Shunting-Yard Algorithm
-
-	vector<const Token*> opStack;
-	vector<const Token*> outQueue;
-
-	byte parenDepth = 1;
-	if (tokens[index].type == TokenType::LParen) {
-		opStack.push_back(&tokens[index++]);
-	}
-
-	bool reachedEnd = false;
-	bool lastWasOp = true;
-	while (index < tokens.size() && !reachedEnd && parenDepth > 0) {
-		const Token& t = tokens[index++];
-
-		switch (t.type) {
-		case TokenType::Literal:
-			// for now function calls are not expressions so all identifiers are vars
-		case TokenType::Identifier:
-			outQueue.emplace_back(&t);
-			break;
-		case TokenType::Operator:
-			while (
-				!opStack.empty() && opStack.back()->type != TokenType::LParen &&
-				HasHigherPrecedence(t, *opStack.back())
-				) {
-				outQueue.emplace_back(opStack.back());
-				opStack.pop_back();
-			}
-			opStack.emplace_back(&t);
-			break;
-		case TokenType::LParen:
-			parenDepth++;
-			opStack.emplace_back(&t);
-			break;
-		case TokenType::RParen:
-			parenDepth--;
-			while (!opStack.empty() && opStack.back()->type != TokenType::LParen) {
-				outQueue.emplace_back(opStack.back());
-				opStack.pop_back();
-			}
-			if (opStack.empty()) {
-				PushErr("mismatched parantheses", t);
-				return nullptr;
-			}
-			opStack.pop_back();
-			// @placeholder: function would be handled here, see wikipedia/shunting-yard-algorithm
-			break;
-			// handle ',' and ';' to end the expression
-		case TokenType::Semicolon:
-			reachedEnd = true;
-			index--;
-			continue;
-		default:
-			PushErr("unexpected token", t);
-			return nullptr;
-		}
-
-		// check for 2 operators or 2 expressions in a row, like  '4 + 2 3' or '4 + * 5'
-		if (t.type != TokenType::LParen && t.type != TokenType::RParen) {
-			bool isOp = t.type == TokenType::Operator;
-			if (lastWasOp == isOp) {
-				PushErr(lastWasOp ? "expected a value" : "expected an expression", t);
-				return nullptr;
-			}
-			lastWasOp = isOp;
-		}
-	}
-	while (!opStack.empty()) {
-		if (opStack.back()->type == TokenType::LParen) {
-			PushErr("mismatched parantheses", *opStack.back());
-			return nullptr;
-		}
-		outQueue.emplace_back(opStack.back());
-		opStack.pop_back();
-	}
-
-	return BuildExpression(outQueue);
+ref<AST::Expression> Parser::ParseExpression(const vector<Token>& tokens, int& index) {
+	// @improve: handle parenthesis
+	return ParseSubExpression(tokens, index, ParsePrimary(tokens, index), 0);
 }
 
-ref<Expression> Parser::BuildExpression(vector<const Token*>& outQueue)
-{
-	const Token& t = *outQueue.back();
-	outQueue.pop_back();
+ref<AST::Expression> Parser::ParseSubExpression(
+	const vector<Token>& tokens, int& index, const ref<Expression>& lhs, byte minPrec) {
+	ref<Expression> expr = lhs;
+	const Token* nextTkn = &(tokens[index]);
+	while ((*nextTkn).type == TokenType::Operator && GetOpPrecedence((*nextTkn).text[0]) >= minPrec) {
+		const Token& opTkn = *nextTkn;
+		byte prec = GetOpPrecedence((*nextTkn).text[0]);
+		index++;
+		auto rhs = ParsePrimary(tokens, index);
+		while (true) {
+			nextTkn = &(tokens[index]);
+			if ((*nextTkn).type != TokenType::Operator) break;
+			byte prec2 = GetOpPrecedence((*nextTkn).text[0]);
+			if (!IsLeftAsociative((*nextTkn).text[0]) && prec2 < prec) break;
+			if (prec2 <= prec) break;
+			rhs = ParseSubExpression(tokens, index, rhs, prec + (prec2 > prec));
+		}
 
-	switch (t.type) {
+		auto binOp = CreateNode<BinaryOperator>(opTkn);
+		binOp->op = (ASTOperator)opTkn.text[0];
+		binOp->rhs = rhs;
+		binOp->lhs = lhs;
+		expr = binOp;
+	}
+	return expr;
+}
+
+ref<AST::Expression> Parser::ParsePrimary(const vector<Token>& tokens, int& index) {
+	const Token& tkn = tokens[index++];
+	switch (tkn.type) {
 	case TokenType::Literal: {
-		auto cnst = CreateNode<Constant>(t);
-		cnst->value = t.value;
+		auto cnst = CreateNode<Constant>(tkn);
+		cnst->value = tkn.value;
 		return cnst;
 	}
 	case TokenType::Identifier: {
-		auto var = CreateNode<Variable>(t);
-		var->identifier = t.text;
+		// @improve: handle fn calls
+		auto var = CreateNode<Variable>(tkn);
+		var->identifier = tkn.text;
 		return var;
 	}
-	case TokenType::Operator: {
-		if (outQueue.size() < 2) {
-			PushErr("expected an expression", t);
-			return nullptr;
-		}
-		auto binOp = CreateNode<BinaryOperator>(t);
-		binOp->op = (ASTOperator)t.text[0];
-		auto rhs = BuildExpression(outQueue);
-		if (!rhs) return nullptr;
-		binOp->rhs = rhs;
-		auto lhs = BuildExpression(outQueue);
-		if (!lhs) return nullptr;
-		binOp->lhs = lhs;
-		return binOp;
+	default: {
+		PushErr("expected an expression", tkn);
+		return nullptr;
 	}
 	}
-	PushErr("illegal token in expression", t);
-	return nullptr;
 }
+
+//ref<Expression> Parser::BuildExpression(vector<const Token*>& outQueue)
+//{
+//	const Token& t = *outQueue.back();
+//	outQueue.pop_back();
+//
+//	switch (t.type) {
+//	case TokenType::Literal: {
+//		auto cnst = CreateNode<Constant>(t);
+//		cnst->value = t.value;
+//		return cnst;
+//	}
+//	case TokenType::Identifier: {
+//		auto var = CreateNode<Variable>(t);
+//		var->identifier = t.text;
+//		return var;
+//	}
+//	case TokenType::Operator: {
+//		if (outQueue.size() < 2) {
+//			PushErr("expected an expression", t);
+//			return nullptr;
+//		}
+//		auto binOp = CreateNode<BinaryOperator>(t);
+//		binOp->op = (ASTOperator)t.text[0];
+//		auto rhs = BuildExpression(outQueue);
+//		if (!rhs) return nullptr;
+//		binOp->rhs = rhs;
+//		auto lhs = BuildExpression(outQueue);
+//		if (!lhs) return nullptr;
+//		binOp->lhs = lhs;
+//		return binOp;
+//	}
+//	}
+//	PushErr("illegal token in expression", t);
+//	return nullptr;
+//}
 
 template<typename T>
 inline ref<T> Parser::CreateNode(const Token& tkn)

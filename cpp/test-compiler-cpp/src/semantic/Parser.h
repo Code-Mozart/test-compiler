@@ -10,12 +10,16 @@ class Parser {
 public:
 	Parser(ErrorHandler& errh) : errh(errh) {}
 public:
+	// @robustness: replace tokens ref with lexer.peek_next()
 	ref<AST::Node> BuildAST(const vector<Token>& tokens);
 private:
 	Keyword ParseKeyword(const string& s);
 	ref<AST::Statement> ParseStatement(const vector<Token>& tokens, int& index);
+
 	ref<AST::Expression> ParseExpression(const vector<Token>& tokens, int& index);
-	ref<AST::Expression> BuildExpression(vector<const Token*>& outQueue);
+	ref<AST::Expression> ParseSubExpression(
+		const vector<Token>& tokens, int& index, const ref<AST::Expression>& lhs, byte minPrec);
+	ref<AST::Expression> ParsePrimary(const vector<Token>& tokens, int& index);
 
 	template<typename T>
 	ref<T> CreateNode(const Token& tkn);

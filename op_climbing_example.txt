@@ -1,0 +1,101 @@
+
+3 * 4 + 5;
+
+* precedence 100
++ precedence 50
+
+parse_expr(-9999)
+	3
+	* means recursively call parse_expr
+	prec of * is 100
+	100 > -9999, so recurse
+	parse_expr(100)
+		4
+		+ means recursively call parse_expr
+		prec of + is 50
+		50 < 100, so DO NOT RECURSE
+		instead return 4
+	
+	lhs = (3 * 4)
+	+ means recursively call parse_expr
+	prec of + is 50
+	50 > -9999, so recurse
+	parse_expr(50)
+		5
+		; means stop
+		return 5
+		
+	lhs = ((3 * 4) + 5)
+	; means stop
+	return lhs
+	
+assert next_tkn is a stopper
+; is stopper, assertion passed
+
+
+##################################################################
+
+
+4 * (8 - 3) + 5;
+
+        -     +
+  * (       )
+4     8   3     5
+
+
+           +
+		  / \
+         *   5
+		/ \
+	   4   -
+	      / \
+		 8   3
+
+
+* precedence 100
++ precedence 50
+- precedence 50
+
+parse_expr(-9999)
+	4
+	* means recursively call parse_expr
+	prec of * is 100
+	100 > -9999, so recurse
+	parse_expr(100)
+		( means recursively call parse_expr
+		parse_expr(-9999)
+			8
+			- means recursively call parse_expr
+			prec of - is 50
+			50 > -9999, so recurse
+			parse_expr(50)
+				3
+				) means stop
+				return 3
+			
+			lhs = (8 - 3)
+			) means stop
+			return (8 - 3)
+		discard )
+		
+		lhs = (8 - 3)
+		+ means recursively call parse_expr
+		prec of + is 50
+		50 < 100, so DO NOT RECURSE
+		instead return (8 - 3)
+		
+	lhs = (4 * (8 - 3))
+	+ means recursively call parse_expr
+	prec of + is 50
+	50 > -9999, so recurse
+	parse_expr(50)
+		5
+		; means stop
+		return 5
+		
+	lhs = ((4 * (8 - 3)) + 5)
+	; means stop
+	return ((4 * (8 - 3)) + 5)
+	
+assert next_tkn is a stopper
+; is stopper, assertion passed
