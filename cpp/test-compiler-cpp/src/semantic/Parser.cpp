@@ -243,20 +243,20 @@ ref<Statement> Parser::ParseStatement(const vector<Token>& tokens, int& index)
 			const Token& nextTkn = tokens[index++];
 			if (nextTkn.type == TokenType::LParen) {
 				// function call
-				// @improve: allow functions with multiple args (handle parantheses missmatch, add ',' separator)
+				// @improve: allow functions with multiple args (handle parentheses missmatch, add ',' separator)
 				
 				auto arg1 = ParseExpression(tokens, index);
 				if (!arg1) return nullptr;
-
-				auto call = CreateNode<Call>(t);
-				call->identifier = t.text;
-				call->args.emplace_back(arg1);
 
 				const Token& rparenTkn = tokens[index++];
 				if (rparenTkn.type != TokenType::RParen) {
 					PushErr("expected a ')'", rparenTkn);
 					return nullptr;
 				}
+
+				auto call = CreateNode<Call>(t);
+				call->identifier = t.text;
+				call->args.emplace_back(arg1);
 
 				const Token& semTkn = tokens[index++];
 				if (semTkn.type != TokenType::Semicolon) {
@@ -304,8 +304,12 @@ ref<Statement> Parser::ParseStatement(const vector<Token>& tokens, int& index)
 	throw ParseException(t);
 }
 
-ref<AST::Expression> Parser::ParseExpression(const vector<Token>& tokens, int& index, byte minPrec) {
-	// @improve: handle paranthesis
+ref<AST::Expression> Parser::ParseExpression(const vector<Token>& tokens, int& index, short minPrec) {
+	if (tokens[index].type == TokenType::LParen) {
+		index++;
+		return ParseExpression(tokens, index, 0);
+	}
+
 	auto lhs = ParsePrimary(tokens, index);
 	if (!lhs) return nullptr;
 	const Token* next = &(tokens[index]);
@@ -315,6 +319,10 @@ ref<AST::Expression> Parser::ParseExpression(const vector<Token>& tokens, int& i
 		if (prec > minPrec) {
 			index++;
 			auto rhs = ParseExpression(tokens, index, prec);
+			if (minPrec == 0 && tokens[index].type == TokenType::RParen) {
+				// discard rparen
+				index++;
+			}
 
 			auto binOp = CreateNode<BinaryOperator>(*next);
 			binOp->op = op;
@@ -351,42 +359,6 @@ ref<AST::Expression> Parser::ParsePrimary(const vector<Token>& tokens, int& inde
 	}
 	}
 }
-
-//ref<Expression> Parser::BuildExpression(vector<const Token*>& outQueue)
-//{
-//	const Token& t = *outQueue.back();
-//	outQueue.pop_back();
-//
-//	switch (t.type) {
-//	case TokenType::Literal: {
-//		auto cnst = CreateNode<Constant>(t);
-//		cnst->value = t.value;
-//		return cnst;
-//	}
-//	case TokenType::Identifier: {
-//		auto var = CreateNode<Variable>(t);
-//		var->identifier = t.text;
-//		return var;
-//	}
-//	case TokenType::Operator: {
-//		if (outQueue.size() < 2) {
-//			PushErr("expected an expression", t);
-//			return nullptr;
-//		}
-//		auto binOp = CreateNode<BinaryOperator>(t);
-//		binOp->op = (ASTOperator)t.text[0];
-//		auto rhs = BuildExpression(outQueue);
-//		if (!rhs) return nullptr;
-//		binOp->rhs = rhs;
-//		auto lhs = BuildExpression(outQueue);
-//		if (!lhs) return nullptr;
-//		binOp->lhs = lhs;
-//		return binOp;
-//	}
-//	}
-//	PushErr("illegal token in expression", t);
-//	return nullptr;
-//}
 
 template<typename T>
 inline ref<T> Parser::CreateNode(const Token& tkn)

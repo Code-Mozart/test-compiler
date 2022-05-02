@@ -1,7 +1,7 @@
 push 4
 push 3
-mul
 push 5
 add
+mul
 cout
 stop
