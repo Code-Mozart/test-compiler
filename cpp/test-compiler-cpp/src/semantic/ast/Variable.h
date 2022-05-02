@@ -11,7 +11,7 @@ namespace AST {
 		}
 		inline virtual string ToString(byte indent = 0) const {
 			return Node::ToString(indent) + GetIndentString(indent + 1)
-				+ identifier + "\n";
+				+ "ident: " + identifier + "\n";
 		}
 	public:
 		string identifier;

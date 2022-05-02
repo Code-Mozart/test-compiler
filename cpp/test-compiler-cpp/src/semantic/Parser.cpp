@@ -245,14 +245,18 @@ ref<Statement> Parser::ParseStatement(const vector<Token>& tokens, int& index)
 				// function call
 				// @improve: allow functions with multiple args (handle parantheses missmatch, add ',' separator)
 				
-				// @temporary
-				index--;
 				auto arg1 = ParseExpression(tokens, index);
 				if (!arg1) return nullptr;
 
 				auto call = CreateNode<Call>(t);
 				call->identifier = t.text;
 				call->args.emplace_back(arg1);
+
+				const Token& rparenTkn = tokens[index++];
+				if (rparenTkn.type != TokenType::RParen) {
+					PushErr("expected a ')'", rparenTkn);
+					return nullptr;
+				}
 
 				const Token& semTkn = tokens[index++];
 				if (semTkn.type != TokenType::Semicolon) {
@@ -300,36 +304,31 @@ ref<Statement> Parser::ParseStatement(const vector<Token>& tokens, int& index)
 	throw ParseException(t);
 }
 
-ref<AST::Expression> Parser::ParseExpression(const vector<Token>& tokens, int& index) {
-	// @improve: handle parenthesis
-	return ParseSubExpression(tokens, index, ParsePrimary(tokens, index), 0);
-}
+ref<AST::Expression> Parser::ParseExpression(const vector<Token>& tokens, int& index, byte minPrec) {
+	// @improve: handle paranthesis
+	auto lhs = ParsePrimary(tokens, index);
+	if (!lhs) return nullptr;
+	const Token* next = &(tokens[index]);
+	while (next->type == TokenType::Operator) {
+		const ASTOperator op = (ASTOperator)next->text[0];
+		const byte prec = GetOpPrecedence((char)op);
+		if (prec > minPrec) {
+			index++;
+			auto rhs = ParseExpression(tokens, index, prec);
 
-ref<AST::Expression> Parser::ParseSubExpression(
-	const vector<Token>& tokens, int& index, const ref<Expression>& lhs, byte minPrec) {
-	ref<Expression> expr = lhs;
-	const Token* nextTkn = &(tokens[index]);
-	while ((*nextTkn).type == TokenType::Operator && GetOpPrecedence((*nextTkn).text[0]) >= minPrec) {
-		const Token& opTkn = *nextTkn;
-		byte prec = GetOpPrecedence((*nextTkn).text[0]);
-		index++;
-		auto rhs = ParsePrimary(tokens, index);
-		while (true) {
-			nextTkn = &(tokens[index]);
-			if ((*nextTkn).type != TokenType::Operator) break;
-			byte prec2 = GetOpPrecedence((*nextTkn).text[0]);
-			if (!IsLeftAsociative((*nextTkn).text[0]) && prec2 < prec) break;
-			if (prec2 <= prec) break;
-			rhs = ParseSubExpression(tokens, index, rhs, prec + (prec2 > prec));
+			auto binOp = CreateNode<BinaryOperator>(*next);
+			binOp->op = op;
+			binOp->rhs = rhs;
+			binOp->lhs = lhs;
+			lhs = binOp;
+
+			next = &(tokens[index]);
 		}
-
-		auto binOp = CreateNode<BinaryOperator>(opTkn);
-		binOp->op = (ASTOperator)opTkn.text[0];
-		binOp->rhs = rhs;
-		binOp->lhs = lhs;
-		expr = binOp;
+		else {
+			return lhs;
+		}
 	}
-	return expr;
+	return lhs;
 }
 
 ref<AST::Expression> Parser::ParsePrimary(const vector<Token>& tokens, int& index) {
@@ -347,7 +346,7 @@ ref<AST::Expression> Parser::ParsePrimary(const vector<Token>& tokens, int& inde
 		return var;
 	}
 	default: {
-		PushErr("expected an expression", tkn);
+		PushErr("expected a value (literal or variable)", tkn);
 		return nullptr;
 	}
 	}

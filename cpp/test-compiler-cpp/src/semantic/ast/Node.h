@@ -13,7 +13,7 @@ namespace AST {
 			return ((short)type) & ((short)GetType());
 		}
 		inline virtual string ToString(byte indent = 0) const {
-			return GetIndentString(indent) + filepath + ":"
+			return GetIndentString(indent)
 				+ std::to_string(line) + "," + std::to_string(pos) + " "
 				+ AST::ToString(GetType()) + "\n";
 		}

@@ -12,7 +12,7 @@ namespace AST {
 		}
 		inline virtual string ToString(byte indent = 0) const {
 			return Node::ToString(indent)
-				+ GetIndentString(indent + 1) + (char)op + "\n"
+				+ GetIndentString(indent + 1) + "op: " + (char)op + "\n"
 				+ lhs->ToString(indent + 1) + rhs->ToString(indent + 1);
 		}
 	public:

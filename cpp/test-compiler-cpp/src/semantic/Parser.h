@@ -16,9 +16,7 @@ private:
 	Keyword ParseKeyword(const string& s);
 	ref<AST::Statement> ParseStatement(const vector<Token>& tokens, int& index);
 
-	ref<AST::Expression> ParseExpression(const vector<Token>& tokens, int& index);
-	ref<AST::Expression> ParseSubExpression(
-		const vector<Token>& tokens, int& index, const ref<AST::Expression>& lhs, byte minPrec);
+	ref<AST::Expression> ParseExpression(const vector<Token>& tokens, int& index, byte minPrec = 0);
 	ref<AST::Expression> ParsePrimary(const vector<Token>& tokens, int& index);
 
 	template<typename T>
