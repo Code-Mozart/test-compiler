@@ -16,6 +16,17 @@ private:
 	Keyword ParseKeyword(const string& s);
 	ref<AST::Statement> ParseStatement(const vector<Token>& tokens, int& index);
 
+	// @refactor: refactor the logic into the following methods
+
+	// ParseDeclaration() = 'var IDENT = EXPR;'
+	// ParseAssignment() = 'IDENT = EXPR;'
+	// ParseWhile() = 'while COND BLOCK'
+	// ParseIfElse() = 'if COND BLOCK [else BLOCK]'
+	// ParseCall() = 'IDENT ( EXPR )' "for now only one expr"
+
+	// ParseCondition() = '( EXPR )'
+	// ParseBlock() = '{ STM... }'
+
 	ref<AST::Expression> ParseExpression(const vector<Token>& tokens, int& index, short minPrec = -1);
 	ref<AST::Expression> ParsePrimary(const vector<Token>& tokens, int& index);
 
