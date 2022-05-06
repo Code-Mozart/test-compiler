@@ -1,7 +1,8 @@
 #include "Token.h"
 
-string ToString(TokenType type)
-{
+#include "Exception.h"
+
+string ToString(TokenType type) {
 	switch (type) {
 	case TokenType::Identifier:		return "Identifier";
 	case TokenType::Literal:		return "Literal";
@@ -12,10 +13,21 @@ string ToString(TokenType type)
 	case TokenType::RBrace:			return "RBrace";
 	case TokenType::Semicolon:		return "Semicolon";
 	}
-	return "error";
+	throw IncorrectImplException(__FILE__, __LINE__, "enum case not handled");
+}
+
+char ToChar(TokenType type) {
+	switch (type) {
+	case TokenType::LParen:			return '(';
+	case TokenType::RParen:			return ')';
+	case TokenType::LBrace:			return '{';
+	case TokenType::RBrace:			return '}';
+	case TokenType::Semicolon:		return ';';
+	}
+	throw IncorrectImplException(__FILE__, __LINE__, "enum case not handled");
 }
 
 string Token::ToString() const {
-	return filepath + ":" + std::to_string(line) + "," + std::to_string(pos) + " " +
+	return std::to_string(line) + "," + std::to_string(pos) + " " +
 		::ToString(type) + " " + (text.empty() ? std::to_string(value) : ("\"" + text + "\""));
 }

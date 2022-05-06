@@ -39,17 +39,30 @@ static bool HasHigherPrecedence(const Token& op1, const Token& op2) {
 }
 
 
+bool Parser::RequireToken(const Token& token, TokenType type, const string& errMsg) {
+	if (token.type != type) {
+		PushErr(errMsg, token);
+		return false;
+	}
+	else {
+		return true;
+	}
+}
+
+bool Parser::RequireOperator(const Token& token, ASTOperator op) {
+	return RequireToken(token, TokenType::Operator, string() + "expected a '" + ((char)op) + "'")
+		&& ((ASTOperator)token.text[0] == op);
+}
+
+
 void Parser::PushErr(const string& text, const Token& tkn) {
 	errh.PushErr(text, tkn);
 }
 
 
-ref<Node> Parser::BuildAST(const vector<Token>& tokens)
-{
+ref<Node> Parser::BuildAST(const vector<Token>& tokens) {
 	ref<Sequence> root = RefTo<Sequence>();
 	root->filepath = "filepath";
-	root->line = 0;
-	root->pos = 0;
 	for (int i = 0; i < tokens.size();) {
 		auto stm = ParseStatement(tokens, i);
 		if (!stm) return nullptr;
@@ -67,227 +80,26 @@ Keyword Parser::ParseKeyword(const string& s) {
 	return Keyword::None;
 }
 
-// @refactor: remove identifier shadowing
 ref<Statement> Parser::ParseStatement(const vector<Token>& tokens, int& index)
 {
-	const Token& t = tokens[index++];
+	const Token& t = tokens[index];
 	switch (t.type)
 	{
 	case TokenType::Identifier: {
 		switch (ParseKeyword(t.text)) {
-		case Keyword::VarDecl: {
-			// declarations are at least 5 tokens
-			// @fix: if the expression is more than 1 token, this doesnt ensure that index++ will not throw
-			if (index + 3 >= tokens.size()) {
-				PushErr("incomplete declaration", t);
-				return nullptr;
-			}
-
-			const Token& identTkn = tokens[index++];
-			if (identTkn.type != TokenType::Identifier) {
-				PushErr("expected an identifier", identTkn);
-				return nullptr;
-			}
-
-			const Token& opTkn = tokens[index++];
-			if (opTkn.type != TokenType::Operator || opTkn.text != "=") {
-				PushErr("expected a '='", opTkn);
-				return nullptr;
-			}
-
-			auto val = ParseExpression(tokens, index);
-			if (!val) return nullptr;
-
-			const Token& semTkn = tokens[index++];
-			if (semTkn.type != TokenType::Semicolon) {
-				PushErr("expected a ';'", semTkn);
-				return nullptr;
-			}
-
-			ref<Declaration> decl = CreateNode<Declaration>(t);
-			decl->identifier = identTkn.text;
-			decl->value = val;
-			return decl;
-		}
-		case Keyword::WhileStm: {
-			// while stm are at least 5 tokens
-			// @fix: if the expression is more than 1 token, this doesnt ensure that index++ will not throw
-			if (index + 3 >= tokens.size()) {
-				PushErr("incomplete while statement", t);
-				return nullptr;
-			}
-
-			const Token& lparenTkn = tokens[index];
-			if (lparenTkn.type != TokenType::LParen) {
-				PushErr("expected a '('", lparenTkn);
-				return nullptr;
-			}
-
-			const Token& condTkn = tokens[index + 1];
-			auto cond = ParseExpression(tokens, index);
-			if (!cond) return nullptr;
-			if (!cond->IsType(Type::Expression)) {
-				PushErr("expected an expression", condTkn);
-				return nullptr;
-			}
-			
-			const Token& lbraceTkn = tokens[index++];
-			if (lbraceTkn.type != TokenType::LBrace) {
-				PushErr("expected a '{'", lbraceTkn);
-				return nullptr;
-			}
-
-			auto whileStm = CreateNode<While>(t);
-			whileStm->condition = cond;
-
-			// @refactor: replace with call to ParseSequence()
-			whileStm->body = CreateNode<Sequence>(lbraceTkn);
-			while (tokens[index].type != TokenType::RBrace) {
-				if (index + 1 >= tokens.size()) {
-					PushErr("unexpected EOF, expected a '}'", tokens.back());
-					return nullptr;
-				}
-
-				auto stm = ParseStatement(tokens, index);
-				if (!stm) return nullptr;
-				whileStm->body->statements.emplace_back(stm);
-			}
-			// consume rbrace
-			index++;
-
-			return whileStm;
-		}
-		case Keyword::IfStm: {
-			// if stm are at least 5 tokens
-			// @fix: if the expression is more than 1 token, this doesnt ensure that index++ will not throw
-			if (index + 3 >= tokens.size()) {
-				PushErr("incomplete if statement", t);
-				return nullptr;
-			}
-
-			const Token& lparenTkn = tokens[index];
-			if (lparenTkn.type != TokenType::LParen) {
-				PushErr("expected a '('", lparenTkn);
-				return nullptr;
-			}
-
-			const Token& condTkn = tokens[index + 1];
-			auto cond = ParseExpression(tokens, index);
-			if (!cond) return nullptr;
-			if (!cond->IsType(Type::Expression)) {
-				PushErr("expected an expression", condTkn);
-				return nullptr;
-			}
-
-			const Token& lbraceTkn = tokens[index++];
-			if (lbraceTkn.type != TokenType::LBrace) {
-				PushErr("expected a '{'", lbraceTkn);
-				return nullptr;
-			}
-
-			auto ifStm = CreateNode<IfElse>(t);
-			ifStm->condition = cond;
-
-			// @refactor: replace with call to ParseSequence()
-			ifStm->ifBody = CreateNode<Sequence>(lbraceTkn);
-			while (tokens[index].type != TokenType::RBrace) {
-				if (index + 1 >= tokens.size()) {
-					PushErr("unexpected EOF, expected a '}'", tokens.back());
-					return nullptr;
-				}
-
-				auto stm = ParseStatement(tokens, index);
-				if (!stm) return nullptr;
-				ifStm->ifBody->statements.emplace_back(stm);
-			}
-			// consume rbrace
-			index++;
-
-
-			// check for else stm
-			if (index + 1 < tokens.size()) {
-				const Token& candidateTkn = tokens[index];
-				if (candidateTkn.type != TokenType::Identifier)
-					return ifStm;
-				if (ParseKeyword(candidateTkn.text) != Keyword::ElseStm)
-					return ifStm;
-				// candidateTkn matched "else"
-				index++;
-
-				const Token& lbraceTkn = tokens[index++];
-				if (lbraceTkn.type != TokenType::LBrace) {
-					PushErr("expected a '{'", lbraceTkn);
-					return nullptr;
-				}
-
-				// @refactor: replace with call to ParseSequence()
-				ifStm->elseBody = CreateNode<Sequence>(lbraceTkn);
-				while (tokens[index].type != TokenType::RBrace) {
-					if (index + 1 >= tokens.size()) {
-						PushErr("unexpected EOF, expected a '}'", tokens.back());
-						return nullptr;
-					}
-
-					auto stm = ParseStatement(tokens, index);
-					if (!stm) return nullptr;
-					ifStm->elseBody->statements.emplace_back(stm);
-				}
-				// consume rbrace
-				index++;
-			}
-
-			return ifStm;
-		}
+		case Keyword::VarDecl:		return ParseDeclaration(tokens, index);
+		case Keyword::WhileStm:		return ParseWhile(tokens, index);
+		case Keyword::IfStm:		return ParseIfElse(tokens, index);
 		default: {
 			// no keyword -> assignment/call
-			const Token& nextTkn = tokens[index++];
-			if (nextTkn.type == TokenType::LParen) {
-				// function call
-				// @improve: allow functions with multiple args (handle parentheses missmatch, add ',' separator)
-				
-				auto arg1 = ParseExpression(tokens, index);
-				if (!arg1) return nullptr;
 
-				const Token& rparenTkn = tokens[index++];
-				if (rparenTkn.type != TokenType::RParen) {
-					PushErr("expected a ')'", rparenTkn);
-					return nullptr;
-				}
+			const Token& identTkn = t;
+			const Token& nextToken = tokens[++index];
 
-				auto call = CreateNode<Call>(t);
-				call->identifier = t.text;
-				call->args.emplace_back(arg1);
-
-				const Token& semTkn = tokens[index++];
-				if (semTkn.type != TokenType::Semicolon) {
-					PushErr("expected a ';'", semTkn);
-					return nullptr;
-				}
-
-				return call;
-			}
-			else if (nextTkn.type == TokenType::Operator) {
-				// assignment
-
-				if (nextTkn.text != "=") {
-					PushErr("expected an '='", nextTkn);
-					return nullptr;
-				}
-
-				auto val = ParseExpression(tokens, index);
-				if (!val) return nullptr;
-
-				const Token& semTkn = tokens[index++];
-				if (semTkn.type != TokenType::Semicolon) {
-					PushErr("expected a ';'", semTkn);
-					return nullptr;
-				}
-
-				auto assignment = CreateNode<Assignment>(t);
-				assignment->variable = t.text;
-				assignment->value = val;
-				return assignment;
-			}
+			if (nextToken.type == TokenType::LParen)
+				return ParseCall(tokens, index, identTkn);
+			else if (nextToken.type == TokenType::Operator)
+				return ParseAssignment(tokens, index, identTkn);
 			else {
 				PushErr("illegal token '" + t.ToString() + "'", t);
 				return nullptr;
@@ -339,6 +151,122 @@ ref<AST::Expression> Parser::ParseExpression(const vector<Token>& tokens, int& i
 	return lhs;
 }
 
+ref<AST::Sequence> Parser::ParseSequence(const vector<Token>& tokens, int& index) {
+	const Token* next = &(tokens[index]);
+	auto seq = CreateNode<Sequence>(tokens[index]);
+	while (next->type != TokenType::RBrace && index < tokens.size()) {
+		auto stm = ParseStatement(tokens, index);
+		if (!stm) return nullptr;
+		seq->statements.emplace_back(stm);
+		next = &(tokens[index]);
+	}
+	return seq;
+}
+
+
+ref<AST::Declaration> Parser::ParseDeclaration(const vector<Token>& tokens, int& index) {
+	const Token& keywordTkn = tokens[index];
+	ASSERT(keywordTkn.type == TokenType::Identifier && keywordTkn.text == Keywords::VarDecl);
+	index++;
+
+	const Token& identTkn = tokens[index++];
+	if (!RequireIdentifier(identTkn)) return nullptr;
+
+	if (!RequireOperator(tokens, index, ASTOperator::Equal)) return nullptr;
+
+	auto val = ParseExpression(tokens, index);
+	if (!val) return nullptr;
+
+	if (!RequireSemicolon(tokens, index)) return nullptr;
+
+	ref<Declaration> decl = CreateNode<Declaration>(keywordTkn);
+	decl->identifier = identTkn.text;
+	decl->value = val;
+	return decl;
+}
+
+ref <AST::While> Parser::ParseWhile(const vector<Token>& tokens, int& index) {
+	const Token& keywordTkn = tokens[index];
+	ASSERT(keywordTkn.type == TokenType::Identifier && keywordTkn.text == Keywords::WhileStm);
+	index++;
+
+	auto cond = ParseCondition(tokens, index);
+	if (!cond) return nullptr;
+
+	auto block = ParseBlock(tokens, index);
+	if (!block) return nullptr;
+
+	auto whileStm = CreateNode<While>(keywordTkn);
+	whileStm->condition = cond;
+	whileStm->body = block;
+	return whileStm;
+}
+
+ref<AST::IfElse> Parser::ParseIfElse(const vector<Token>& tokens, int& index) {
+	const Token& keywordTkn = tokens[index];
+	ASSERT(keywordTkn.type == TokenType::Identifier && keywordTkn.text == Keywords::IfStm);
+	index++;
+
+	auto cond = ParseCondition(tokens, index);
+	if (!cond) return nullptr;
+
+	auto ifBlock = ParseBlock(tokens, index);
+	if (!ifBlock) return nullptr;
+
+	auto ifStm = CreateNode<IfElse>(keywordTkn);
+	ifStm->condition = cond;
+	ifStm->ifBody = ifBlock;
+
+	const Token& elseTkn = tokens[index];
+	if (elseTkn.type == TokenType::Identifier && elseTkn.text == Keywords::ElseStm) {
+		index++;
+		auto elseBlock = ParseBlock(tokens, index);
+		if (!elseBlock) return nullptr;
+		ifStm->elseBody = elseBlock;
+	}
+
+	return ifStm;
+}
+
+ref<AST::Assignment> Parser::ParseAssignment(const vector<Token>& tokens, int& index, const Token& identTkn) {
+	ASSERT(identTkn.type == TokenType::Identifier);
+
+	// next token is an operator, but check it anyway
+	if (!RequireOperator(tokens, index, ASTOperator::Equal)) return nullptr;
+
+	auto val = ParseExpression(tokens, index);
+	if (!val) return nullptr;
+
+	if (!RequireSemicolon(tokens, index)) return nullptr;
+
+	auto assignment = CreateNode<Assignment>(identTkn);
+	assignment->variable = identTkn.text;
+	assignment->value = val;
+	return assignment;
+}
+
+// @improve: allow functions with multiple args (handle parentheses missmatch, add ',' separator)
+ref<AST::Call> Parser::ParseCall(const vector<Token>& tokens, int& index, const Token& identTkn) {
+	ASSERT(identTkn.type == TokenType::Identifier);
+
+	// next token is a lparen
+	const Token& lparenTkn = tokens[index++];
+	ASSERT(lparenTkn.type == TokenType::LParen);
+
+	auto arg1 = ParseExpression(tokens, index);
+	if (!arg1) return nullptr;
+
+	if (!RequireToken(tokens, index, TokenType::RParen)) return nullptr;
+
+	auto call = CreateNode<Call>(identTkn);
+	call->identifier = identTkn.text;
+	call->args.emplace_back(arg1);
+
+	if (!RequireSemicolon(tokens, index)) return nullptr;
+
+	return call;
+}
+
 ref<AST::Expression> Parser::ParsePrimary(const vector<Token>& tokens, int& index) {
 	const Token& tkn = tokens[index++];
 	switch (tkn.type) {
@@ -358,6 +286,29 @@ ref<AST::Expression> Parser::ParsePrimary(const vector<Token>& tokens, int& inde
 		return nullptr;
 	}
 	}
+}
+
+ref<AST::Expression> Parser::ParseCondition(const vector<Token>& tokens, int& index) {
+	if (!RequireToken(tokens, index, TokenType::LParen)) return nullptr;
+
+	auto expr = ParseExpression(tokens, index);
+	if (!expr) return nullptr;
+
+	if (!RequireToken(tokens, index, TokenType::RParen)) return nullptr;
+
+	return expr;
+}
+
+// @refactor: save a symbol table with each block/scope
+ref<AST::Sequence> Parser::ParseBlock(const vector<Token>& tokens, int& index) {
+	if (!RequireToken(tokens, index, TokenType::LBrace)) return nullptr;
+
+	auto seq = ParseSequence(tokens, index);
+	if (!seq) return nullptr;
+
+	if (!RequireToken(tokens, index, TokenType::RBrace)) return nullptr;
+
+	return seq;
 }
 
 template<typename T>

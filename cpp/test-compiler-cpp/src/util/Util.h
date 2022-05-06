@@ -23,3 +23,5 @@ inline constexpr static ref<T> RefTo() { return std::make_shared<T>(); }
 #define SET_BIT(bits, mask) bits |= mask
 #define CLEAR_BIT(bits, mask) bits &= ~mask
 #define FLIP_BIT(bits, mask) bits ^= mask
+
+#define ASSERT(x) if (!(x)) throw "ASSERTION FAILED"

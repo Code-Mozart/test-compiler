@@ -10,6 +10,7 @@ enum class TokenType {
 };
 
 string ToString(TokenType type);
+char ToChar(TokenType type);
 
 class Token {
 public:

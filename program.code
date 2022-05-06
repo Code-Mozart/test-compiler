@@ -21,4 +21,8 @@
 
 // FOR REFACTORING
 
-print(4 * (3 + 5));
+var i = 10;
+while (0 < i) {
+	print(i);
+	i = i - 1;
+}
