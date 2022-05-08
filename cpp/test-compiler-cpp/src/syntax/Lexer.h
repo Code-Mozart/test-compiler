@@ -7,13 +7,24 @@
 
 class Lexer {
 public:
-	Lexer(ErrorHandler& errh) : errh(errh) {}
+	Lexer(const FileInfo& srcInfo, ErrorHandler* errh = nullptr);
 public:
-	vector<Token> Tokenize(const FileInfo& srcFile);
+	bool HasCurrent() const;
+	bool HasNext() const;
+	const Token* Peek();
+	const Token* PeekNext();
+	const Token* Advance();
+	const Token* AdvanceAndPeek();
 private:
+	const vector<Token> Tokenize();
 	void PushErr(const string& text, const string& filepath, ulong line, ulong pos);
 private:
-	ErrorHandler& errh;
+	const FileInfo& srcInfo;
+	ErrorHandler* errh;
+public:
+	const vector<Token> tokens;
+private:
+	ulong index;
 };
 
 struct EOFException : public Exception {

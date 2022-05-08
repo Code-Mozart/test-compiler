@@ -55,15 +55,15 @@ int main(int argc, char** argv) {
 			printf("%s\n", info.content.c_str());
 
 			// @improve: allow this to fail
-			auto tokens = Lexer(errh).Tokenize(info);
+			Lexer lexer = Lexer(info, &errh);
 			errh.PushInfo("identified tokens", path);
 
-			for (const auto& t : tokens) {
+			for (const auto& t : lexer.tokens) {
 				printf("%s\n", t.ToString().c_str());
 			}
 			printf("\n");
 
-			auto root = Parser(errh).BuildAST(tokens);
+			auto root = Parser(lexer, errh).BuildAST();
 			if (!root) {
 				errh.PushErr("failed to build AST", path);
 			}
@@ -97,6 +97,9 @@ int main(int argc, char** argv) {
 		}
 	}
 	catch (const std::exception& e) {
+		PrintException(e);
+	}
+	catch (const char* e) {
 		PrintException(e);
 	}
 	catch (...) {

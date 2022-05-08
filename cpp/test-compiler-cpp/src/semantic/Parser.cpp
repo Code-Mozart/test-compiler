@@ -39,8 +39,11 @@ static bool HasHigherPrecedence(const Token& op1, const Token& op2) {
 }
 
 
-bool Parser::RequireToken(const Token& token, TokenType type, const string& errMsg) {
-	if (token.type != type) {
+bool Parser::RequireToken(const Token* token, TokenType type, const string& errMsg) {
+	if (!token) {
+		return false;
+	}
+	else if (token->type != type) {
 		PushErr(errMsg, token);
 		return false;
 	}
@@ -49,22 +52,31 @@ bool Parser::RequireToken(const Token& token, TokenType type, const string& errM
 	}
 }
 
-bool Parser::RequireOperator(const Token& token, ASTOperator op) {
+bool Parser::RequireOperator(const Token* token, ASTOperator op) {
+	if (!token) return false;
 	return RequireToken(token, TokenType::Operator, string() + "expected a '" + ((char)op) + "'")
-		&& ((ASTOperator)token.text[0] == op);
+		&& ((ASTOperator)token->text[0] == op);
 }
 
 
-void Parser::PushErr(const string& text, const Token& tkn) {
-	errh.PushErr(text, tkn);
+void Parser::PushErr(const string& text, const Token* tkn) {
+	ASSERT(tkn);
+	errh.PushErr(text, *tkn);
 }
 
 
-ref<Node> Parser::BuildAST(const vector<Token>& tokens) {
+Parser::Parser(Lexer& lexer, ErrorHandler& errh)
+	:
+	lexer(lexer),
+	errh(errh)
+{
+}
+
+ref<Node> Parser::BuildAST() {
 	ref<Sequence> root = RefTo<Sequence>();
 	root->filepath = "filepath";
-	for (int i = 0; i < tokens.size();) {
-		auto stm = ParseStatement(tokens, i);
+	while (lexer.HasNext()) {
+		auto stm = ParseStatement();
 		if (!stm) return nullptr;
 		root->statements.emplace_back(stm);
 	}
@@ -80,35 +92,38 @@ Keyword Parser::ParseKeyword(const string& s) {
 	return Keyword::None;
 }
 
-ref<Statement> Parser::ParseStatement(const vector<Token>& tokens, int& index)
-{
-	const Token& t = tokens[index];
-	switch (t.type)
+ref<Statement> Parser::ParseStatement() {
+	const Token* t = lexer.Peek();
+	if (!t) return nullptr;
+	switch (t->type)
 	{
 	case TokenType::Identifier: {
-		switch (ParseKeyword(t.text)) {
-		case Keyword::VarDecl:		return ParseDeclaration(tokens, index);
-		case Keyword::WhileStm:		return ParseWhile(tokens, index);
-		case Keyword::IfStm:		return ParseIfElse(tokens, index);
+		switch (ParseKeyword(t->text)) {
+		case Keyword::VarDecl:		return ParseDeclaration();
+		case Keyword::WhileStm:		return ParseWhile();
+		case Keyword::IfStm:		return ParseIfElse();
 		default: {
 			// no keyword -> assignment/call
 
-			const Token& identTkn = t;
-			const Token& nextToken = tokens[++index];
+			if (!lexer.HasNext()) break;
 
-			if (nextToken.type == TokenType::LParen)
-				return ParseCall(tokens, index, identTkn);
-			else if (nextToken.type == TokenType::Operator)
-				return ParseAssignment(tokens, index, identTkn);
-			else {
-				PushErr("illegal token '" + t.ToString() + "'", t);
+			const Token* identTkn = t;
+			const Token* nextToken = lexer.PeekNext();
+
+			switch (nextToken->type)
+			{
+			case TokenType::LParen:		return ParseCall(identTkn);
+			case TokenType::Operator:	return ParseAssignment(identTkn);
+			default: {
+				PushErr("illegal token '" + t->ToString() + "'", t);
 				return nullptr;
+			}
 			}
 		}
 		}
 	}
 	default: {
-		PushErr("illegal token '" + t.ToString() + "', expected a statement", t);
+		PushErr("illegal token '" + t->ToString() + "', expected a statement", t);
 		return nullptr;
 	}
 	}
@@ -116,33 +131,34 @@ ref<Statement> Parser::ParseStatement(const vector<Token>& tokens, int& index)
 	throw ParseException(t);
 }
 
-ref<AST::Expression> Parser::ParseExpression(const vector<Token>& tokens, int& index, short minPrec) {
-	if (tokens[index].type == TokenType::LParen) {
-		index++;
-		return ParseExpression(tokens, index, 0);
+ref<AST::Expression> Parser::ParseExpression(short minPrec) {
+	if (lexer.HasCurrent() && lexer.Peek()->type == TokenType::LParen) {
+		lexer.Advance();
+		return ParseExpression(0);
 	}
 
-	auto lhs = ParsePrimary(tokens, index);
+	auto lhs = ParsePrimary();
 	if (!lhs) return nullptr;
-	const Token* next = &(tokens[index]);
-	while (next->type == TokenType::Operator) {
-		const ASTOperator op = (ASTOperator)next->text[0];
+	const Token* token = lexer.Peek();
+	while (token && token->type == TokenType::Operator) {
+		const ASTOperator op = (ASTOperator)token->text[0];
 		const byte prec = GetOpPrecedence((char)op);
 		if (prec > minPrec) {
-			index++;
-			auto rhs = ParseExpression(tokens, index, prec);
-			if (minPrec == 0 && tokens[index].type == TokenType::RParen) {
+			lexer.Advance();
+			auto rhs = ParseExpression(prec);
+			if (lexer.HasCurrent() && minPrec == 0 && lexer.Peek()->type == TokenType::RParen) {
 				// discard rparen
-				index++;
+				lexer.Advance();
 			}
 
-			auto binOp = CreateNode<BinaryOperator>(*next);
+			auto binOp = CreateNode<BinaryOperator>(token);
 			binOp->op = op;
 			binOp->rhs = rhs;
 			binOp->lhs = lhs;
+
 			lhs = binOp;
 
-			next = &(tokens[index]);
+			token = lexer.Peek();
 		}
 		else {
 			return lhs;
@@ -151,49 +167,50 @@ ref<AST::Expression> Parser::ParseExpression(const vector<Token>& tokens, int& i
 	return lhs;
 }
 
-ref<AST::Sequence> Parser::ParseSequence(const vector<Token>& tokens, int& index) {
-	const Token* next = &(tokens[index]);
-	auto seq = CreateNode<Sequence>(tokens[index]);
-	while (next->type != TokenType::RBrace && index < tokens.size()) {
-		auto stm = ParseStatement(tokens, index);
+ref<AST::Sequence> Parser::ParseSequence() {
+	const Token* token = lexer.Peek();
+	auto seq = CreateNode<Sequence>(token);
+	while (token && token->type != TokenType::RBrace) {
+		auto stm = ParseStatement();
 		if (!stm) return nullptr;
 		seq->statements.emplace_back(stm);
-		next = &(tokens[index]);
+		token = lexer.Peek();
 	}
 	return seq;
 }
 
 
-ref<AST::Declaration> Parser::ParseDeclaration(const vector<Token>& tokens, int& index) {
-	const Token& keywordTkn = tokens[index];
-	ASSERT(keywordTkn.type == TokenType::Identifier && keywordTkn.text == Keywords::VarDecl);
-	index++;
+ref<AST::Declaration> Parser::ParseDeclaration() {
+	const Token* keywordTkn = lexer.Peek();
+	ASSERT(keywordTkn);
+	ASSERT(keywordTkn->type == TokenType::Identifier && keywordTkn->text == Keywords::VarDecl);
+	lexer.Advance();
 
-	const Token& identTkn = tokens[index++];
+	const Token* identTkn = lexer.Advance();
 	if (!RequireIdentifier(identTkn)) return nullptr;
 
-	if (!RequireOperator(tokens, index, ASTOperator::Equal)) return nullptr;
+	if (!RequireOperator(ASTOperator::Equal)) return nullptr;
 
-	auto val = ParseExpression(tokens, index);
+	auto val = ParseExpression();
 	if (!val) return nullptr;
 
-	if (!RequireSemicolon(tokens, index)) return nullptr;
+	if (!RequireSemicolon()) return nullptr;
 
 	ref<Declaration> decl = CreateNode<Declaration>(keywordTkn);
-	decl->identifier = identTkn.text;
+	decl->identifier = identTkn->text;
 	decl->value = val;
 	return decl;
 }
 
-ref <AST::While> Parser::ParseWhile(const vector<Token>& tokens, int& index) {
-	const Token& keywordTkn = tokens[index];
-	ASSERT(keywordTkn.type == TokenType::Identifier && keywordTkn.text == Keywords::WhileStm);
-	index++;
+ref <AST::While> Parser::ParseWhile() {
+	const Token* keywordTkn = lexer.Peek();
+	ASSERT(keywordTkn->type == TokenType::Identifier && keywordTkn->text == Keywords::WhileStm);
+	lexer.Advance();
 
-	auto cond = ParseCondition(tokens, index);
+	auto cond = ParseCondition();
 	if (!cond) return nullptr;
 
-	auto block = ParseBlock(tokens, index);
+	auto block = ParseBlock();
 	if (!block) return nullptr;
 
 	auto whileStm = CreateNode<While>(keywordTkn);
@@ -202,25 +219,25 @@ ref <AST::While> Parser::ParseWhile(const vector<Token>& tokens, int& index) {
 	return whileStm;
 }
 
-ref<AST::IfElse> Parser::ParseIfElse(const vector<Token>& tokens, int& index) {
-	const Token& keywordTkn = tokens[index];
-	ASSERT(keywordTkn.type == TokenType::Identifier && keywordTkn.text == Keywords::IfStm);
-	index++;
+ref<AST::IfElse> Parser::ParseIfElse() {
+	const Token* keywordTkn = lexer.Peek();
+	ASSERT(keywordTkn->type == TokenType::Identifier && keywordTkn->text == Keywords::IfStm);
+	lexer.Advance();
 
-	auto cond = ParseCondition(tokens, index);
+	auto cond = ParseCondition();
 	if (!cond) return nullptr;
 
-	auto ifBlock = ParseBlock(tokens, index);
+	auto ifBlock = ParseBlock();
 	if (!ifBlock) return nullptr;
 
 	auto ifStm = CreateNode<IfElse>(keywordTkn);
 	ifStm->condition = cond;
 	ifStm->ifBody = ifBlock;
 
-	const Token& elseTkn = tokens[index];
-	if (elseTkn.type == TokenType::Identifier && elseTkn.text == Keywords::ElseStm) {
-		index++;
-		auto elseBlock = ParseBlock(tokens, index);
+	const Token* elseTkn = lexer.Peek();
+	if (elseTkn->type == TokenType::Identifier && elseTkn->text == Keywords::ElseStm) {
+		lexer.Advance();
+		auto elseBlock = ParseBlock();
 		if (!elseBlock) return nullptr;
 		ifStm->elseBody = elseBlock;
 	}
@@ -228,96 +245,100 @@ ref<AST::IfElse> Parser::ParseIfElse(const vector<Token>& tokens, int& index) {
 	return ifStm;
 }
 
-ref<AST::Assignment> Parser::ParseAssignment(const vector<Token>& tokens, int& index, const Token& identTkn) {
-	ASSERT(identTkn.type == TokenType::Identifier);
+ref<AST::Assignment> Parser::ParseAssignment(const Token* identTkn) {
+	ASSERT(identTkn->type == TokenType::Identifier);
+	lexer.Advance();
 
-	// next token is an operator, but check it anyway
-	if (!RequireOperator(tokens, index, ASTOperator::Equal)) return nullptr;
+	// next token is an operator, but check it anyway (to ensure it is an equal)
+	if (!RequireOperator(ASTOperator::Equal)) return nullptr;
 
-	auto val = ParseExpression(tokens, index);
+	auto val = ParseExpression();
 	if (!val) return nullptr;
 
-	if (!RequireSemicolon(tokens, index)) return nullptr;
+	if (!RequireSemicolon()) return nullptr;
 
 	auto assignment = CreateNode<Assignment>(identTkn);
-	assignment->variable = identTkn.text;
+	assignment->variable = identTkn->text;
 	assignment->value = val;
 	return assignment;
 }
 
 // @improve: allow functions with multiple args (handle parentheses missmatch, add ',' separator)
-ref<AST::Call> Parser::ParseCall(const vector<Token>& tokens, int& index, const Token& identTkn) {
-	ASSERT(identTkn.type == TokenType::Identifier);
+ref<AST::Call> Parser::ParseCall(const Token* identTkn) {
+	ASSERT(identTkn->type == TokenType::Identifier);
+	lexer.Advance();
 
 	// next token is a lparen
-	const Token& lparenTkn = tokens[index++];
-	ASSERT(lparenTkn.type == TokenType::LParen);
+	const Token* lparenTkn = lexer.Peek();
+	ASSERT(lparenTkn->type == TokenType::LParen);
+	lexer.Advance();
 
-	auto arg1 = ParseExpression(tokens, index);
+	auto arg1 = ParseExpression();
 	if (!arg1) return nullptr;
 
-	if (!RequireToken(tokens, index, TokenType::RParen)) return nullptr;
+	if (!RequireToken(TokenType::RParen)) return nullptr;
+
+	if (!RequireSemicolon()) return nullptr;
 
 	auto call = CreateNode<Call>(identTkn);
-	call->identifier = identTkn.text;
+	call->identifier = identTkn->text;
 	call->args.emplace_back(arg1);
-
-	if (!RequireSemicolon(tokens, index)) return nullptr;
-
 	return call;
 }
 
-ref<AST::Expression> Parser::ParsePrimary(const vector<Token>& tokens, int& index) {
-	const Token& tkn = tokens[index++];
-	switch (tkn.type) {
+ref<AST::Expression> Parser::ParsePrimary() {
+	const Token* token = lexer.Peek();
+	if (!token) return nullptr;
+	switch (token->type) {
 	case TokenType::Literal: {
-		auto cnst = CreateNode<Constant>(tkn);
-		cnst->value = tkn.value;
+		auto cnst = CreateNode<Constant>(token);
+		cnst->value = token->value;
+		lexer.Advance();
 		return cnst;
 	}
 	case TokenType::Identifier: {
 		// @improve: handle fn calls
-		auto var = CreateNode<Variable>(tkn);
-		var->identifier = tkn.text;
+		auto var = CreateNode<Variable>(token);
+		var->identifier = token->text;
+		lexer.Advance();
 		return var;
 	}
 	default: {
-		PushErr("expected a value (literal or variable)", tkn);
+		PushErr("expected a value (literal or variable)", token);
 		return nullptr;
 	}
 	}
 }
 
-ref<AST::Expression> Parser::ParseCondition(const vector<Token>& tokens, int& index) {
-	if (!RequireToken(tokens, index, TokenType::LParen)) return nullptr;
+ref<AST::Expression> Parser::ParseCondition() {
+	if (!RequireToken(TokenType::LParen)) return nullptr;
 
-	auto expr = ParseExpression(tokens, index);
+	auto expr = ParseExpression();
 	if (!expr) return nullptr;
 
-	if (!RequireToken(tokens, index, TokenType::RParen)) return nullptr;
+	if (!RequireToken(TokenType::RParen)) return nullptr;
 
 	return expr;
 }
 
 // @refactor: save a symbol table with each block/scope
-ref<AST::Sequence> Parser::ParseBlock(const vector<Token>& tokens, int& index) {
-	if (!RequireToken(tokens, index, TokenType::LBrace)) return nullptr;
+ref<AST::Sequence> Parser::ParseBlock() {
+	if (!RequireToken(TokenType::LBrace)) return nullptr;
 
-	auto seq = ParseSequence(tokens, index);
+	auto seq = ParseSequence();
 	if (!seq) return nullptr;
 
-	if (!RequireToken(tokens, index, TokenType::RBrace)) return nullptr;
+	if (!RequireToken(TokenType::RBrace)) return nullptr;
 
 	return seq;
 }
 
 template<typename T>
-inline ref<T> Parser::CreateNode(const Token& tkn)
-{
+inline ref<T> Parser::CreateNode(const Token* tkn) {
 	// @optimize: use big memory block instead
 	ref<T> node = RefTo<T>();
-	node->filepath = tkn.filepath;
-	node->line = tkn.line;
-	node->pos = tkn.pos;
+	node->filepath = tkn->filepath;
+	node->line = tkn->line;
+	node->pos = tkn->pos;
 	return node;
 }

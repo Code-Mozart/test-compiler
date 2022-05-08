@@ -4,21 +4,71 @@ static const vector<char> delimiters = {
 	' ', '\n', '\t',
 	';',
 	'(', ')', '{', '}',
-	'=', '+', '-', '*', '/', '<', '>'
+	'=', '<', '>',
+	'+', '-', '*', '/'
 };
 
 inline static bool IsInt(char c) { return (c >= '0' && c <= '9'); }
 inline static bool IsValidFirstChar(char c) { return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_'; }
 inline static bool IsValidChar(char c) { return IsValidFirstChar(c) || IsInt(c); }
 
-void Lexer::PushErr(const string& text, const string& filepath, ulong line, ulong pos) {
-	errh.PushErr(text, filepath, line, pos);
+Lexer::Lexer(const FileInfo& srcInfo, ErrorHandler* errh)
+	:
+	srcInfo(srcInfo),
+	errh(errh),
+	tokens(Tokenize()),
+	index(0)
+{
 }
 
-vector<Token> Lexer::Tokenize(const FileInfo& srcFile) {
+bool Lexer::HasCurrent() const {
+	return index < tokens.size();
+}
+
+bool Lexer::HasNext() const {
+	return index + 1 < tokens.size();
+}
+
+const Token* Lexer::Peek() {
+	if (index < tokens.size()) {
+		return &(tokens[index]);
+	}
+	else {
+		PushErr("unexpected EOF", srcInfo.filename, srcInfo.lines, tokens.back().pos + tokens.back().text.length());
+		return nullptr;
+	}
+}
+
+const Token* Lexer::PeekNext() {
+	if (index + 1 < tokens.size()) {
+		return &(tokens[index + 1]);
+	}
+	else {
+		PushErr("unexpected EOF", srcInfo.filename, srcInfo.lines, tokens.back().pos + tokens.back().text.length());
+		return nullptr;
+	}
+}
+
+const Token* Lexer::Advance() {
+	const Token* next = Peek();
+	index++;
+	return next;
+}
+
+const Token* Lexer::AdvanceAndPeek()
+{
+	index++;
+	return Peek();
+}
+
+void Lexer::PushErr(const string& text, const string& filepath, ulong line, ulong pos) {
+	if (errh) errh->PushErr(text, filepath, line, pos);
+}
+
+const vector<Token> Lexer::Tokenize() {
 	vector<Token> tokens;
-	const string& src = srcFile.content;
-	if (srcFile.content.empty()) return tokens;
+	const string& src = srcInfo.content;
+	if (src.empty()) return tokens;
 
 	ulong line = 1;
 	ulong pos = 0;
@@ -56,7 +106,7 @@ vector<Token> Lexer::Tokenize(const FileInfo& srcFile) {
 		else if (c == '/')
 		{
 			if (i >= src.size() - 1) {
-				PushErr("unexpected EOF", srcFile.filename, line, pos);
+				PushErr("unexpected EOF", srcInfo.filename, line, pos);
 				return {};
 			}
 			else if (src[i + 1] == '/')
@@ -86,7 +136,7 @@ vector<Token> Lexer::Tokenize(const FileInfo& srcFile) {
 		{
 			if (intLiteral) {
 				tokens.emplace_back(
-					srcFile.filename,
+					srcInfo.filename,
 					line,
 					pos - text.length(),
 
@@ -100,7 +150,7 @@ vector<Token> Lexer::Tokenize(const FileInfo& srcFile) {
 			else if (!text.empty())
 			{
 				tokens.emplace_back(
-					srcFile.filename,
+					srcInfo.filename,
 					line,
 					pos - text.length(),
 
@@ -121,11 +171,12 @@ vector<Token> Lexer::Tokenize(const FileInfo& srcFile) {
 			case '{':	type = TokenType::LBrace;		break;
 			case '}':	type = TokenType::RBrace;		break;
 
-			case '-':
-			case '=':
 			case '+':
+			case '-':
 			case '*':
 			case '/':
+
+			case '=':
 			case '<':
 			case '>':	type = TokenType::Operator;		break;
 
@@ -134,7 +185,7 @@ vector<Token> Lexer::Tokenize(const FileInfo& srcFile) {
 			default:	continue;
 			}
 			tokens.emplace_back(
-				srcFile.filename,
+				srcInfo.filename,
 				line,
 				pos,
 
@@ -171,7 +222,7 @@ vector<Token> Lexer::Tokenize(const FileInfo& srcFile) {
 				}
 				else
 				{
-					PushErr("illegal char", srcFile.filename, line, pos);
+					PushErr("illegal char", srcInfo.filename, line, pos);
 					return {};
 				}
 			}

@@ -24,4 +24,6 @@ inline constexpr static ref<T> RefTo() { return std::make_shared<T>(); }
 #define CLEAR_BIT(bits, mask) bits &= ~mask
 #define FLIP_BIT(bits, mask) bits ^= mask
 
-#define ASSERT(x) if (!(x)) throw "ASSERTION FAILED"
+#define STRINGIFY2(x) #x
+#define STRINGIFY(x) STRINGIFY2(x)
+#define ASSERT(x) if (!(x)) throw "ASSERTION FAILED AT " __FILE__ ":" STRINGIFY(__LINE__)
