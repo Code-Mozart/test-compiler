@@ -6,6 +6,7 @@ enum class Operation {
 	Stop,
 	Push, Pop, Load, Store,
 	Jump, JumpIf0, JumpNot0,
+	Call, Return,
 	Add, Subtract, Multiply, Divide, Modulo,
 	LessThan,
 	ConsoleOut
@@ -23,6 +24,9 @@ inline static string ToString(Operation op) {
 	case Operation::Jump:			return "jmp";
 	case Operation::JumpIf0:		return "jz";
 	case Operation::JumpNot0:		return "jnz";
+
+	case Operation::Call:			return "call";
+	case Operation::Return:			return "ret";
 
 	case Operation::Add:			return "add";
 	case Operation::Subtract:		return "sub";
@@ -45,6 +49,7 @@ inline static bool HasParam(Operation op) {
 	case Operation::Jump:	
 	case Operation::JumpIf0:
 	case Operation::JumpNot0:
+	case Operation::Call:
 		return true;
 	default:
 		return false;

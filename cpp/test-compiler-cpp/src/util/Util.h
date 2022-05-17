@@ -16,8 +16,11 @@ using std::pair;
 template<typename T>
 using ref = std::shared_ptr<T>;
 
-template <typename T>
-inline constexpr static ref<T> RefTo() { return std::make_shared<T>(); }
+template <typename T, typename... Args>
+inline constexpr static ref<T> RefTo(Args&&... args) { return std::make_shared<T>(std::forward<Args>(args)...); }
+
+template <typename T, typename U>
+inline constexpr static ref<T> CastTo(U& u) { return std::static_pointer_cast<T>(u); }
 
 #define GET_BIT(bits, mask) (bits & mask)
 #define SET_BIT(bits, mask) bits |= mask

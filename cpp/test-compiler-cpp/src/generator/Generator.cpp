@@ -1,14 +1,28 @@
 #include "Generator.h"
 
 #include "generator/Instruction.h"
+#include "semantic/SymbolTable.h"
 
 using namespace AST;
 
-string CodeGenerator::Generate(ref<Node> root) {
+string CodeGenerator::Generate(ref<Container> cont) {
+	ASSERT(cont);
+
 	vector<Instruction> instructions;
 	RuntimeStack stack;
-	Generate(root, instructions, stack);
+	PlaceholderHandler phh;
+	phh.Resolve("main", 0, instructions);
+
+	ASSERT(cont->symbols);
+	auto mainProcNode = cont->symbols->FindProc("main");
+	Generate(mainProcNode, instructions, stack, phh);
 	instructions.emplace_back(Instruction{ Operation::Stop });
+
+	for (const auto& proc : cont->procedures) {
+		if (proc->identifier != "main") {
+			Generate(proc, instructions, stack, phh);
+		}
+	}
 
 	string bytecode;
 	for (const auto& instr : instructions) {
@@ -21,7 +35,7 @@ string CodeGenerator::Generate(ref<Node> root) {
 	return bytecode;
 }
 
-vector<Instruction>& CodeGenerator::Generate(ref<Node> node, vector<Instruction>& instructions, RuntimeStack& stack) {
+vector<Instruction>& CodeGenerator::Generate(ref<Node> node, vector<Instruction>& instructions, RuntimeStack& stack, PlaceholderHandler& phh) {
 	if (!node) throw NullptrException("node is null");
 	
 	switch (node->GetType())
@@ -30,7 +44,7 @@ vector<Instruction>& CodeGenerator::Generate(ref<Node> node, vector<Instruction>
 		const auto& seq = (Sequence&)*node;
 		stack.EnterScope(node);
 		for (const auto& stm : seq.statements) {
-			Generate(stm, instructions, stack);
+			Generate(stm, instructions, stack, phh);
 		}
 		stack.ExitScope();
 		break;
@@ -39,13 +53,13 @@ vector<Instruction>& CodeGenerator::Generate(ref<Node> node, vector<Instruction>
 
 	case Type::Declaration: {
 		const auto& decl = (Declaration&)*node;
-		Generate(decl.value, instructions, stack);
+		Generate(decl.value, instructions, stack, phh);
 		stack.PutVar(decl.identifier);
 		break;
 	}
 	case Type::Assignment: {
 		const auto& assignm = (Assignment&)*node;
-		Generate(assignm.value, instructions, stack);
+		Generate(assignm.value, instructions, stack, phh);
 		short offset = stack.GetOffset(assignm.variable);
 		instructions.emplace_back(Instruction{ Operation::Store, offset });
 		stack.Shrink();
@@ -54,7 +68,7 @@ vector<Instruction>& CodeGenerator::Generate(ref<Node> node, vector<Instruction>
 	case Type::While: {
 		const auto& whileStm = (While&)*node;
 		short count = instructions.size();
-		Generate(whileStm.condition, instructions, stack);
+		Generate(whileStm.condition, instructions, stack, phh);
 
 		vector<Instruction> bodyInstructions;
 		// shrink stack as if the condition result had been processed already
@@ -62,7 +76,7 @@ vector<Instruction>& CodeGenerator::Generate(ref<Node> node, vector<Instruction>
 		stack.EnterScope(node);
 		// @refactor: replace with Generate(whileStm.body)
 		for (const auto& stm : whileStm.body->statements) {
-			Generate(stm, bodyInstructions, stack);
+			Generate(stm, bodyInstructions, stack, phh);
 		}
 		byte popCount = stack.ExitScope();
 		for (byte i = 0; i < popCount; i++)
@@ -82,7 +96,7 @@ vector<Instruction>& CodeGenerator::Generate(ref<Node> node, vector<Instruction>
 		// @missing: implement else body
 
 		const auto& ifStm = (IfElse&)*node;
-		Generate(ifStm.condition, instructions, stack);
+		Generate(ifStm.condition, instructions, stack, phh);
 
 		vector<Instruction> ifBodyInstructions;
 		// shrink stack as if the condition result had been processed already
@@ -90,7 +104,7 @@ vector<Instruction>& CodeGenerator::Generate(ref<Node> node, vector<Instruction>
 		stack.EnterScope(node);
 		// @refactor: replace with Generate(ifStm.ifBody)
 		for (const auto& stm : ifStm.ifBody->statements) {
-			Generate(stm, ifBodyInstructions, stack);
+			Generate(stm, ifBodyInstructions, stack, phh);
 		}
 		byte popCount = stack.ExitScope();
 		for (byte i = 0; i < popCount; i++)
@@ -113,7 +127,7 @@ vector<Instruction>& CodeGenerator::Generate(ref<Node> node, vector<Instruction>
 			stack.EnterScope(node);
 			// @refactor: replace with Generate(ifStm.elseBody)
 			for (const auto& stm : ifStm.elseBody->statements) {
-				Generate(stm, elseBodyInstructions, stack);
+				Generate(stm, elseBodyInstructions, stack, phh);
 			}
 			byte popCount = stack.ExitScope();
 			for (byte i = 0; i < popCount; i++)
@@ -131,14 +145,14 @@ vector<Instruction>& CodeGenerator::Generate(ref<Node> node, vector<Instruction>
 	case Type::Call: {
 		const auto& call = (Call&)*node;
 		for (const auto& arg : call.args) {
-			Generate(arg, instructions, stack);
+			Generate(arg, instructions, stack, phh);
 		}
 		if (call.identifier == "print") {
 			instructions.emplace_back(Instruction{ Operation::ConsoleOut });
 			stack.Shrink();
 		}
 		else {
-			throw NotImplementedException(__FILE__, __LINE__, "only print calls are supported for now");
+			instructions.emplace_back(Instruction{ Operation::Call, phh.AddUsage(call.identifier, instructions.size()) });
 		}
 		break;
 	}
@@ -159,8 +173,8 @@ vector<Instruction>& CodeGenerator::Generate(ref<Node> node, vector<Instruction>
 	}
 	case Type::BinOp: {
 		const auto& binOp = (BinaryOperator&)*node;
-		Generate(binOp.lhs, instructions, stack);
-		Generate(binOp.rhs, instructions, stack);
+		Generate(binOp.lhs, instructions, stack, phh);
+		Generate(binOp.rhs, instructions, stack, phh);
 
 		Operation op;
 		switch (binOp.op) {
@@ -180,6 +194,34 @@ vector<Instruction>& CodeGenerator::Generate(ref<Node> node, vector<Instruction>
 		instructions.emplace_back(Instruction{ op });
 		stack.Shrink();
 
+		break;
+	}
+
+
+	case Type::Procedure: {
+		const auto& proc = (Procedure&)*node;
+
+		if (proc.identifier != "main") {
+			phh.Resolve(proc.identifier, instructions.size(), instructions);
+		}
+
+		stack.EnterScope(node);
+		// because program counter is pushed
+		stack.Grow();
+		// @refactor: replace with Generate(proc.body)
+		for (const auto& stm : proc.body->statements) {
+			Generate(stm, instructions, stack, phh);
+		}
+		// stack pointer gets popped
+		stack.Shrink();
+		byte popCount = stack.ExitScope();
+		for (byte i = 0; i < popCount; i++)
+			instructions.emplace_back(Instruction{ Operation::Pop });
+
+		if (proc.identifier != "main") {
+			instructions.emplace_back(Instruction{ Operation::Return });
+		}
+		
 		break;
 	}
 

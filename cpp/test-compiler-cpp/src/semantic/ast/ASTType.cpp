@@ -21,6 +21,10 @@ namespace AST {
 		case Type::Const:		return "Const";
 		case Type::BinOp:		return "BinOp";
 		case Type::Var:			return "Var";
+
+		case Type::Procedure:	return "Procedure";
+
+		case Type::Container:	return "Container";
 		}
 		throw IncorrectImplException(__FILE__, __LINE__, "enum case not handled");
 	}

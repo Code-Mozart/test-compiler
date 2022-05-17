@@ -7,7 +7,9 @@
 class Analyzer {
 public:
 	Analyzer(ErrorHandler& errh) : errh(errh) {}
-	bool ValidateAST(ref<AST::Node> node, SymbolTable* pSymbols = nullptr);
+	bool ValidateAST(ref<AST::Container> cont);
+private:
+	bool Validate(ref<AST::Node> node, SymbolTable* pSymbols = nullptr);
 private:
 	ErrorHandler& errh;
 };

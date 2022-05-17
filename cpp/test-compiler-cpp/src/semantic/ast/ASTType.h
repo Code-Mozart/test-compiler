@@ -19,7 +19,11 @@ namespace AST {
 		Expression	= 0x10 << 3,
 		Const		= Expression | 1,
 		BinOp		= Expression | 2,
-		Var			= Expression | 3
+		Var			= Expression | 3,
+		
+		Procedure	= 0x10 << 4,
+
+		Container	= 0x10 << 5
 	};
 
 	string ToString(Type t);

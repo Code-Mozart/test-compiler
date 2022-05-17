@@ -1,22 +1,22 @@
 #include "SymbolTable.h"
 
-bool SymbolTable::Add(const string& identifier, ref<AST::Node> definition)
+bool SymbolTable::Add(const string& identifier, SymbolType type, ref<AST::Node> definition)
 {
 	if (pParent && pParent->Find(identifier))
 		return false;
-	auto [iter, success] = data.emplace(std::make_pair(identifier, Symbol{ identifier, definition }));
+	auto [iter, success] = data.emplace(std::make_pair(identifier, Symbol{ identifier, type, definition }));
 	return success;
 }
 
-ref<AST::Node> SymbolTable::Find(const string& identifier)
+const Symbol* SymbolTable::FindSymbol(const string& identifier) const
 {
 	// search in bottom-up order
 	auto iter = data.find(identifier);
 	if (iter != data.end()) {
-		return iter->second.definition;
+		return &(iter->second);
 	}
 	else if (pParent) {
-		return pParent->Find(identifier);
+		return pParent->FindSymbol(identifier);
 	}
 	else {
 		return nullptr;

@@ -6,32 +6,29 @@
 #include "semantic/ast/include.h"
 #include "semantic/Keywords.h"
 #include "syntax/Lexer.h"
+#include "semantic/SymbolTable.h"
 
 class Parser {
 public:
-	Parser(Lexer& lexer, ErrorHandler& errh);
+	Parser(const FileInfo& srcInfo, Lexer& lexer, ErrorHandler& errh);
 public:
-	ref<AST::Node> BuildAST();
+	ref<AST::Container> BuildAST(const SymbolTable* builtIns);
 private:
 	Keyword ParseKeyword(const string& s);
-	ref<AST::Statement> ParseStatement();
-	ref<AST::Expression> ParseExpression(short minPrec = -1);
-	ref<AST::Sequence> ParseSequence();
+	ref<AST::Statement> ParseStatement(SymbolTable* symbols);
+	ref<AST::Expression> ParseExpression(SymbolTable* symbols, short minPrec = -1);
+	ref<AST::Sequence> ParseSequence(SymbolTable* symbols);
+	ref<AST::Procedure> ParseProcedure(SymbolTable* symbols);
 
-	ref<AST::Declaration> ParseDeclaration();
-	ref<AST::While> ParseWhile();
-	ref<AST::IfElse> ParseIfElse();
-	ref<AST::Assignment> ParseAssignment(const Token* identTkn);
-	ref<AST::Call> ParseCall(const Token* identTkn);
+	ref<AST::Declaration> ParseDeclaration(SymbolTable* symbols);
+	ref<AST::While> ParseWhile(SymbolTable* symbols);
+	ref<AST::IfElse> ParseIfElse(SymbolTable* symbols);
+	ref<AST::Assignment> ParseAssignment(SymbolTable* symbols, const Token* identTkn);
+	ref<AST::Call> ParseCall(SymbolTable* symbols, const Token* identTkn);
 
-	ref<AST::Expression> ParsePrimary();
-	ref<AST::Expression> ParseCondition();
-	ref<AST::Sequence> ParseBlock();
-
-	// @refactor: refactor the logic into the following methods
-
-	// ParseCondition() = '( EXPR )'
-	// ParseBlock() = '{ STM... }'
+	ref<AST::Expression> ParsePrimary(SymbolTable* symbols);
+	ref<AST::Expression> ParseCondition(SymbolTable* symbols);
+	ref<AST::Sequence> ParseBlock(SymbolTable* symbols);
 	
 
 	bool RequireToken(const Token* token, TokenType type, const string& errMsg);
@@ -61,6 +58,7 @@ private:
 
 	void PushErr(const string& text, const Token* tkn);
 private:
+	const FileInfo& srcInfo;
 	Lexer& lexer;
 	ErrorHandler& errh;
 };

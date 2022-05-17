@@ -1,40 +1,15 @@
 
-// // INTRODUCING PROCEDURES
-// 
-// // for now:
-// // all procedures are void and may not take arguments
-// 
-// proc print123() {
-// 	print(1);
-// 	print(2);
-// 	print(3);
-// }
-// 
-// // main is reserved as the entry point
-// proc main() {
-// 	print123();	
-// }
-// 
-// // for now code outside main() is compiled
-// // but never executed
+// INTRODUCING PROCEDURES
 
+// for now:
+// all procedures are void and may not take arguments
 
-// FOR REFACTORING
-
-var i = 10;
-while (0 < i) {
-	print(i);
-	i = i - 1;
+proc print1() {
+	print(1);
+	print1();
 }
 
-if (i) {
-	print(567);
+// main is reserved as the entry point
+proc main() {
+	print1();
 }
-else {
-	print(0 - 111);
-}
-
-var x = 4;
-var y = 5;
-y = x + 2 * (3 - x);
-print(y);

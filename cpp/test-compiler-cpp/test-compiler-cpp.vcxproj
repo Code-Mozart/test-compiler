@@ -161,6 +161,7 @@
   <ItemGroup>
     <ClCompile Include="src\errh\ErrorHandler.cpp" />
     <ClCompile Include="src\errh\Message.cpp" />
+    <ClCompile Include="src\generator\PlaceholderHandler.cpp" />
     <ClCompile Include="src\generator\RuntimeStack.cpp" />
     <ClCompile Include="src\semantic\Analyzer.cpp" />
     <ClCompile Include="src\semantic\ast\ASTType.cpp" />
@@ -175,6 +176,7 @@
   <ItemGroup>
     <ClInclude Include="src\Common.h" />
     <ClInclude Include="src\generator\Instruction.h" />
+    <ClInclude Include="src\generator\PlaceholderHandler.h" />
     <ClInclude Include="src\generator\RuntimeStack.h" />
     <ClInclude Include="src\io\FileInfo.h" />
     <ClInclude Include="src\semantic\Analyzer.h" />
@@ -191,8 +193,10 @@
     <ClInclude Include="src\semantic\ast\Declaration.h" />
     <ClInclude Include="src\semantic\ast\Expression.h" />
     <ClInclude Include="src\semantic\ast\Node.h" />
+    <ClInclude Include="src\semantic\ast\Procedure.h" />
     <ClInclude Include="src\semantic\ast\Sequence.h" />
     <ClInclude Include="src\semantic\ast\Statement.h" />
+    <ClInclude Include="src\semantic\ast\Container.h" />
     <ClInclude Include="src\semantic\ast\Variable.h" />
     <ClInclude Include="src\semantic\ast\While.h" />
     <ClInclude Include="src\Exception.h" />
@@ -200,6 +204,7 @@
     <ClInclude Include="src\errh\Message.h" />
     <ClInclude Include="src\errh\ErrorHandler.h" />
     <ClInclude Include="src\semantic\Keywords.h" />
+    <ClInclude Include="src\semantic\Symbol.h" />
     <ClInclude Include="src\syntax\Lexer.h" />
     <ClInclude Include="src\semantic\Parser.h" />
     <ClInclude Include="src\syntax\Token.h" />

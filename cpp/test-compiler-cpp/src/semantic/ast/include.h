@@ -15,3 +15,7 @@
 #include "Constant.h"
 #include "Variable.h"
 #include "BinaryOperator.h"
+
+#include "Procedure.h"
+
+#include "Container.h"

@@ -1,26 +1,23 @@
 #pragma once
 
 #include "Node.h"
-#include "Statement.h"
-
-class SymbolTable;
+#include "Procedure.h"
 
 namespace AST {
 
-	// @overhaul: replace with Block node inheriting from statement
-	class Sequence : public Node {
+	class Container : public Node {
 	public:
 		inline virtual Type GetType() const override {
-			return Type::Sequence;
+			return Type::Container;
 		}
 		inline virtual string ToString(byte indent = 0) const {
 			string s = Node::ToString(indent);
-			for (const auto& stm : statements)
-				s += stm->ToString(indent + 1);
+			for (const auto& proc : procedures)
+				s += proc->ToString(indent + 1);
 			return s;
 		}
 	public:
-		vector<ref<Statement>> statements;
+		vector<ref<Procedure>> procedures;
 		ref<SymbolTable> symbols = nullptr;
 	};
 

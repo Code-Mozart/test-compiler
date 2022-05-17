@@ -1,21 +1,38 @@
 
-version: 2022-04-29
+version: 2022-05-13
 
 *
 optional loop
-	[statement]
+	[function declaration]
 (EOF)
 x
+
+------------------------------------------------------------------
+
+[function declaration]=
+("proc")
+(IDENTIFIER)
+("(")
+(")")
+("{")
+optional loop
+	[statement]
+("}")
+	
+------------------------------------------------------------------
+
+[variable declaration]=
+	("var")
+	(IDENTIFIER)
+	("=")
+	[expression]
 
 ------------------------------------------------------------------
 
 [statement]=
 case 'single'
 	case 'declaration'
-		("var")
-		(IDENTIFIER)
-		("=")
-		[expression]
+		[variable declaration]
 	or 'assignment'
 		(IDENTIFIER)
 		("=")
@@ -23,7 +40,8 @@ case 'single'
 	or 'call'
 		(IDENTIFIER)
 		("(")
-		[expression]
+		optional 'arg'
+			[expression]
 		(")")
 	(";")
 or 'while'
