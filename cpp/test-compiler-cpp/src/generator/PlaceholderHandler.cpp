@@ -28,3 +28,9 @@ void PlaceholderHandler::Resolve(const string& identifier, short line, vector<In
         pendingUsages.erase(usagesIter);
     }
 }
+
+void PlaceholderHandler::AssertNothingUnresolved() const {
+    if (!pendingUsages.empty()) {
+        throw IncorrectImplException(__FILE__, __LINE__, "expected all usages to be resolved now");
+    }
+}

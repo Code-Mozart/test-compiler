@@ -2,7 +2,6 @@
 
 #include "util/Util.h"
 #include "semantic/ast/include.h"
-#include "semantic/Symbol.h"
 
 // @improve: different maps for vars and procs so that they may have the same identifier
 class SymbolTable
@@ -10,27 +9,33 @@ class SymbolTable
 public:
 	SymbolTable(const SymbolTable* pParent = nullptr) : pParent(pParent) {}
 public:
-	inline ref<AST::Node> Find(const string& identifier) const {
-		const Symbol* sym = FindSymbol(identifier);
-		return sym ? sym->definition : nullptr;
-	}
-	inline ref<AST::Node> FindProc(const string& identifier) const { return FindType(identifier, SymbolType::Procedure); }
-	inline ref<AST::Node> FindVar(const string& identifier) const { return FindType(identifier, SymbolType::Variable); }
+	// returns nullptr or the conflicting declaration
+	ref<AST::Declaration> AddVar(ref<AST::Declaration> declaration);
+	
+	// returns nullptr or the conflicting definition
+	// resolves all pending calls waiting on this procedure
+	// definition
+	ref<AST::Procedure> AddProc(ref<AST::Procedure> definition);
 
-	inline bool AddProc(const string& identifier, ref<AST::Node> definition) {
-		return Add(identifier, SymbolType::Procedure, definition);
-	}
-	inline bool AddVar(const string& identifier, ref<AST::Node> definition) {
-		return Add(identifier, SymbolType::Variable, definition);
-	}
+
+	// returns the declaration of the variable or nullptr if the variable
+	// has not been declared
+	ref<AST::Declaration> GetVar(const string& identifier) const;
+
+	// returns the definition of the procedure or nullptr if the procedure
+	// was not yet been defined
+	ref<AST::Procedure> GetProc(const string& identifier) const;
+	
+	// returns the definition of the procedure or nullptr if the procedure
+	// was not yet been defined in which case the call is remembered by this
+	// symbol table and gets resolved eventually when the procedure is finally
+	// defined
+	ref<AST::Procedure> AddCall(ref<AST::Call> call);
+
+	inline const map<string, vector<ref<AST::Call>>>& GetUnresolvedCalls() const { return unresolvedCalls; }
 private:
-	const Symbol* FindSymbol(const string& identifier) const;
-	inline ref<AST::Node> FindType(const string& identifier, SymbolType type) const {
-		const Symbol* sym = FindSymbol(identifier);
-		return (sym && sym->type == type) ? sym->definition : nullptr;
-	}
-	bool Add(const string& identifier, SymbolType type, ref<AST::Node> definition);
-private:
-	map<string, Symbol> data;
+	map<string, vector<ref<AST::Call>>> unresolvedCalls;
+	map<string, ref<AST::Procedure>> procedures;
+	map<string, ref<AST::Declaration>> variables;
 	const SymbolTable* pParent;
 };

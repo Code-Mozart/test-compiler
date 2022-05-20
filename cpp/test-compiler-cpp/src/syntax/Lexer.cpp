@@ -205,8 +205,15 @@ const vector<Token> Lexer::Tokenize() {
 			}
 			else if (!text.empty())
 			{
-				// @improve: check if c is a valid char
-				text += c;
+				if (IsValidChar(c))
+				{
+					text += c;
+				}
+				else
+				{
+					PushErr(string() + "illegal char '" + c + "'", srcInfo.filename, line, pos);
+					return {};
+				}
 			}
 			else
 			{
@@ -222,7 +229,7 @@ const vector<Token> Lexer::Tokenize() {
 				}
 				else
 				{
-					PushErr("illegal char", srcInfo.filename, line, pos);
+					PushErr(string() + "illegal char '" + c + "'", srcInfo.filename, line, pos);
 					return {};
 				}
 			}

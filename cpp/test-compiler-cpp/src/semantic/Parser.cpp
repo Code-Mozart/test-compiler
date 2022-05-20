@@ -212,10 +212,10 @@ ref<AST::Procedure> Parser::ParseProcedure(SymbolTable* symbols) {
 
 	// add symbol before block to allow for recursion
 	ASSERT(symbols);
-	// @improve: replace with FindProc and allow a proc and a var to have the same identifier
-	if (!symbols->AddProc(proc->identifier, proc)) {
-		const auto& conflictingDef = symbols->Find(proc->identifier);
-		PushErr("symbol '" + proc->identifier + "' conflicts with " + conflictingDef->Node::ToString(), identTkn);
+	auto conflictingDef = symbols->AddProc(proc);
+	if (conflictingDef) {
+		PushErr("procedure definition '" + proc->identifier + "' conflicts with "
+			+ conflictingDef->Node::ToString(), identTkn);
 		return nullptr;
 	}
 
@@ -251,10 +251,10 @@ ref<AST::Declaration> Parser::ParseDeclaration(SymbolTable* symbols) {
 	// add symbol after parsing the expressions value,
 	// because it is not known at this point
 	ASSERT(symbols);
-	// @improve: replace with FindVar and allow a proc and a var to have the same identifier
-	if (!symbols->AddVar(decl->identifier, decl)) {
-		const auto& conflictingDef = symbols->Find(decl->identifier);
-		PushErr("symbol '" + decl->identifier + "' conflicts with " + conflictingDef->Node::ToString(), identTkn);
+	auto conflictingDecl = symbols->AddVar(decl);
+	if (conflictingDecl) {
+		PushErr("variable declaration '" + decl->identifier + "' conflicts with "
+			+ conflictingDecl->Node::ToString(), identTkn);
 		return nullptr;
 	}
 
@@ -332,10 +332,7 @@ ref<AST::Call> Parser::ParseCall(SymbolTable* symbols, const Token* identTkn) {
 	call->identifier = identTkn->text;
 
 	ASSERT(symbols);
-	if (!symbols->FindProc(call->identifier)) {
-		PushErr("symbol '" + call->identifier + "' not found", identTkn);
-		return nullptr;
-	}
+	symbols->AddCall(call);
 
 	// next token is a lparen
 	const Token* lparenTkn = lexer.Peek();
@@ -370,7 +367,7 @@ ref<AST::Expression> Parser::ParsePrimary(SymbolTable* symbols) {
 		// @improve: handle fn calls
 
 		ASSERT(symbols);
-		if (!symbols->FindVar(token->text)) {
+		if (!symbols->GetVar(token->text)) {
 			PushErr("symbol '" + token->text + "' not found", token);
 			return nullptr;
 		}
@@ -398,7 +395,6 @@ ref<AST::Expression> Parser::ParseCondition(SymbolTable* symbols) {
 	return expr;
 }
 
-// @refactor: save a symbol table with each block/scope
 ref<AST::Sequence> Parser::ParseBlock(SymbolTable* symbols) {
 	if (!RequireToken(TokenType::LBrace)) return nullptr;
 

@@ -1,24 +1,73 @@
 #include "SymbolTable.h"
 
-bool SymbolTable::Add(const string& identifier, SymbolType type, ref<AST::Node> definition)
-{
-	if (pParent && pParent->Find(identifier))
-		return false;
-	auto [iter, success] = data.emplace(std::make_pair(identifier, Symbol{ identifier, type, definition }));
-	return success;
-}
-
-const Symbol* SymbolTable::FindSymbol(const string& identifier) const
-{
-	// search in bottom-up order
-	auto iter = data.find(identifier);
-	if (iter != data.end()) {
-		return &(iter->second);
+ref<AST::Declaration> SymbolTable::AddVar(ref<AST::Declaration> decl) {
+	if (pParent) {
+		auto conflictingDecl = pParent->GetVar(decl->identifier);
+		if (conflictingDecl) return conflictingDecl;
 	}
-	else if (pParent) {
-		return pParent->FindSymbol(identifier);
+	auto [iter, success] = variables.emplace(std::make_pair(decl->identifier, decl));
+	if (success) {
+		return nullptr;
 	}
 	else {
+		return iter->second;
+	}
+}
+
+ref<AST::Procedure> SymbolTable::AddProc(ref<AST::Procedure> def) {
+	if (pParent) {
+		auto conflictingDef = pParent->GetProc(def->identifier);
+		if (conflictingDef) return conflictingDef;
+	}
+	auto [procIter, success] = procedures.emplace(std::make_pair(def->identifier, def));
+	if (success) {
+		auto unresolvedIter = unresolvedCalls.find(def->identifier);
+		if (unresolvedIter != unresolvedCalls.end()) {
+			// could resolve all calls here if they would require a reference to the def
+			unresolvedCalls.erase(unresolvedIter);
+		}
+		return nullptr;
+	}
+	else {
+		return procIter->second;
+	}
+}
+
+ref<AST::Declaration> SymbolTable::GetVar(const string& identifier) const {
+	// search in bottom-up order
+	auto iter = variables.find(identifier);
+	if (iter != variables.end()) {
+		return iter->second;
+	}
+	else if (pParent) {
+		return pParent->GetVar(identifier);
+	}
+	else {
+		return nullptr;
+	}
+}
+
+ref<AST::Procedure> SymbolTable::GetProc(const string& identifier) const {
+	// search in bottom-up order
+	auto iter = procedures.find(identifier);
+	if (iter != procedures.end()) {
+		return iter->second;
+	}
+	else if (pParent) {
+		return pParent->GetProc(identifier);
+	}
+	else {
+		return nullptr;
+	}
+}
+
+ref<AST::Procedure> SymbolTable::AddCall(ref<AST::Call> call) {
+	auto def = GetProc(call->identifier);
+	if (def) {
+		return def;
+	}
+	else {
+		unresolvedCalls[call->identifier].emplace_back(call);
 		return nullptr;
 	}
 }

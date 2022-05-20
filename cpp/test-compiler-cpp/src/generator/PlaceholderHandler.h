@@ -12,6 +12,10 @@ public:
     // resolves the given identifier and remembers its line for later usages,
     // resolves all pending usages
 	void Resolve(const string& identifier, short line, vector<Instruction>& instructions);
+
+    // asserts that at the time of the call all usages are resolved
+    // throws an IncorrectImplException if the assertion fails
+    void AssertNothingUnresolved() const;
 private:
     map<string, short> resolvedIdentifiers;
 	map<string, vector<size_t>> pendingUsages;

@@ -9,7 +9,7 @@ using namespace AST;
 bool Analyzer::ValidateAST(ref<Container> cont) {
 	if (!cont) throw NullptrException("ValidateAST() called with null");
 	ASSERT(cont->symbols);
-	if (!cont->symbols->FindProc("main")) {
+	if (!cont->symbols->GetProc("main")) {
 		errh.PushErr("there was no main procedure", *cont);
 		return false;
 	}

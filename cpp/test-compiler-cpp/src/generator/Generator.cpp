@@ -14,7 +14,7 @@ string CodeGenerator::Generate(ref<Container> cont) {
 	phh.Resolve("main", 0, instructions);
 
 	ASSERT(cont->symbols);
-	auto mainProcNode = cont->symbols->FindProc("main");
+	auto mainProcNode = cont->symbols->GetProc("main");
 	Generate(mainProcNode, instructions, stack, phh);
 	instructions.emplace_back(Instruction{ Operation::Stop });
 
@@ -23,6 +23,8 @@ string CodeGenerator::Generate(ref<Container> cont) {
 			Generate(proc, instructions, stack, phh);
 		}
 	}
+
+	phh.AssertNothingUnresolved();
 
 	string bytecode;
 	for (const auto& instr : instructions) {

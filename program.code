@@ -1,15 +1,18 @@
-
-// INTRODUCING PROCEDURES
-
 // for now:
 // all procedures are void and may not take arguments
 
-proc print1() {
-	print(1);
-	print1();
+proc same_name() {
+	var same_name = 10;
+	print(same_name);
+	print(same_name);
+	print(same_name);
 }
 
-// main is reserved as the entry point
 proc main() {
-	print1();
+	same_name();
+	def_after_call();
+}
+
+proc def_after_call() {
+	print(12345);
 }
