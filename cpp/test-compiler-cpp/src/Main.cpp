@@ -65,7 +65,9 @@ int main(int argc, char** argv) {
 
 			// create symbol table and fill in built-in symbols
 			SymbolTable builtIns;
-			//builtIns.AddProc("print", RefTo<AST::BuiltIn>());
+			auto builtinPrint = RefTo<AST::Procedure>();
+			builtinPrint->identifier = "print";
+			builtIns.AddProc(builtinPrint);
 
 			auto root = Parser(info, lexer, errh).BuildAST(&builtIns);
 			if (!root) {

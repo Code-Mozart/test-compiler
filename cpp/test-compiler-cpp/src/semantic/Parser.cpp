@@ -72,7 +72,7 @@ Parser::Parser(const FileInfo& srcInfo, Lexer& lexer, ErrorHandler& errh)
 {
 }
 
-ref<Container> Parser::BuildAST(const SymbolTable* builtIns) {
+ref<Container> Parser::BuildAST(SymbolTable* builtIns) {
 	auto cont = RefTo<Container>();
 	cont->filepath = srcInfo.filename;
 	cont->symbols = RefTo<SymbolTable>(builtIns);
@@ -368,7 +368,7 @@ ref<AST::Expression> Parser::ParsePrimary(SymbolTable* symbols) {
 
 		ASSERT(symbols);
 		if (!symbols->GetVar(token->text)) {
-			PushErr("symbol '" + token->text + "' not found", token);
+			PushErr("variable '" + token->text + "' has not yet been declared", token);
 			return nullptr;
 		}
 
