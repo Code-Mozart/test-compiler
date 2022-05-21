@@ -1,18 +1,15 @@
 // for now:
 // all procedures are void and may not take arguments
 
-proc same_name() {
-	var same_name = 10;
-	print(same_name);
-	print(same_name);
-	print(same_name);
-}
-
 proc main() {
-	same_name();
+	my_print(5);
 	def_after_call();
 }
 
 proc def_after_call() {
 	print(12345);
+}
+
+proc my_print(num) {
+	print(num);
 }

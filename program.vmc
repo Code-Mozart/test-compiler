@@ -1,15 +1,10 @@
-call 3
-call 12
+push 5
+call 7
+call 4
 stop
-push 10
-load 0
-cout
-load 0
-cout
-load 0
-cout
-pop
-ret
 push 12345
+cout
+ret
+push 11111
 cout
 ret

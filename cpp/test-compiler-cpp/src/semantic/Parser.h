@@ -12,7 +12,7 @@ class Parser {
 public:
 	Parser(const FileInfo& srcInfo, Lexer& lexer, ErrorHandler& errh);
 public:
-	ref<AST::Container> BuildAST(const SymbolTable* builtIns);
+	ref<AST::Container> BuildAST(SymbolTable* builtIns);
 private:
 	Keyword ParseKeyword(const string& s);
 	ref<AST::Statement> ParseStatement(SymbolTable* symbols);

@@ -1,5 +1,13 @@
 #include "SymbolTable.h"
 
+SymbolTable::SymbolTable(SymbolTable* pParent)
+	: pParent(pParent)
+{
+	if (pParent) {
+		pParent->children.emplace_back(this);
+	}
+}
+
 ref<AST::Declaration> SymbolTable::AddVar(ref<AST::Declaration> decl) {
 	if (pParent) {
 		auto conflictingDecl = pParent->GetVar(decl->identifier);
@@ -21,10 +29,9 @@ ref<AST::Procedure> SymbolTable::AddProc(ref<AST::Procedure> def) {
 	}
 	auto [procIter, success] = procedures.emplace(std::make_pair(def->identifier, def));
 	if (success) {
-		auto unresolvedIter = unresolvedCalls.find(def->identifier);
-		if (unresolvedIter != unresolvedCalls.end()) {
-			// could resolve all calls here if they would require a reference to the def
-			unresolvedCalls.erase(unresolvedIter);
+		Resolve(def);
+		for (auto child : children) {
+			child->Resolve(def);
 		}
 		return nullptr;
 	}
@@ -69,5 +76,13 @@ ref<AST::Procedure> SymbolTable::AddCall(ref<AST::Call> call) {
 	else {
 		unresolvedCalls[call->identifier].emplace_back(call);
 		return nullptr;
+	}
+}
+
+void SymbolTable::Resolve(ref<AST::Procedure> def) {
+	auto unresolvedIter = unresolvedCalls.find(def->identifier);
+	if (unresolvedIter != unresolvedCalls.end()) {
+		// could resolve all calls here if they would require a reference to the def
+		unresolvedCalls.erase(unresolvedIter);
 	}
 }

@@ -7,7 +7,7 @@
 class SymbolTable
 {
 public:
-	SymbolTable(const SymbolTable* pParent = nullptr) : pParent(pParent) {}
+	SymbolTable(SymbolTable* pParent = nullptr);
 public:
 	// returns nullptr or the conflicting declaration
 	ref<AST::Declaration> AddVar(ref<AST::Declaration> declaration);
@@ -34,8 +34,12 @@ public:
 
 	inline const map<string, vector<ref<AST::Call>>>& GetUnresolvedCalls() const { return unresolvedCalls; }
 private:
+	void Resolve(ref<AST::Procedure> definition);
+private:
 	map<string, vector<ref<AST::Call>>> unresolvedCalls;
 	map<string, ref<AST::Procedure>> procedures;
 	map<string, ref<AST::Declaration>> variables;
-	const SymbolTable* pParent;
+
+	SymbolTable* pParent;
+	vector<SymbolTable*> children;
 };
