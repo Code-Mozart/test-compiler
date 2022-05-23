@@ -13,6 +13,9 @@ x
 ("proc")
 (IDENTIFIER)
 ("(")
+optional 'parameter'
+	("var")
+	(IDENTIFIER)
 (")")
 ("{")
 optional loop
@@ -62,6 +65,12 @@ or 'if'
 	optional loop
 		[statement]
 	("}")
+	optional
+		("else")
+		("{")
+		optional loop
+			[statement]
+		("}")
 
 ------------------------------------------------------------------
 

@@ -183,9 +183,14 @@ ref<AST::Expression> Parser::ParseExpression(SymbolTable* symbols, short minPrec
 }
 
 ref<AST::Sequence> Parser::ParseSequence(SymbolTable* symbols) {
+	auto seqSymbols = RefTo<SymbolTable>(symbols);
+	return ParseSequence(seqSymbols);
+}
+
+ref<AST::Sequence> Parser::ParseSequence(ref<SymbolTable>& symbols) {
 	const Token* token = lexer.Peek();
 	auto seq = CreateNode<Sequence>(token);
-	seq->symbols = RefTo<SymbolTable>(symbols);
+	seq->symbols = symbols;
 	while (token && token->type != TokenType::RBrace) {
 		auto stm = ParseStatement(seq->symbols.get());
 		if (!stm) return nullptr;
@@ -205,10 +210,49 @@ ref<AST::Procedure> Parser::ParseProcedure(SymbolTable* symbols) {
 	if (!RequireIdentifier(identTkn)) return nullptr;
 
 	if (!RequireToken(TokenType::LParen)) return nullptr;
-	if (!RequireToken(TokenType::RParen)) return nullptr;
 
 	auto proc = CreateNode<Procedure>(keywordTkn);
 	proc->identifier = identTkn->text;
+
+	auto bodySymbols = RefTo<SymbolTable>(symbols);
+
+	const Token* nextToken = lexer.Peek();
+	if (!nextToken) return nullptr;
+	switch (nextToken->type) {
+	case TokenType::Identifier: {
+		if (nextToken->text != Keywords::VarDecl) {
+			PushErr("illegal token '" + nextToken->ToString() + "'", nextToken);
+			return nullptr;
+		}
+		
+		const Token* paramToken = lexer.AdvanceAndPeek();
+		if (!RequireIdentifier(paramToken)) return nullptr;
+		lexer.Advance();
+
+		auto param = CreateNode<Declaration>(paramToken);
+		param->identifier = paramToken->text;
+		
+		proc->parameters.emplace_back(param);
+		auto conflictingDecl = bodySymbols->AddVar(param);
+		if (conflictingDecl) {
+			errh.PushErr("procedure parameter '" + param->identifier + "' conflicts with "
+				+ conflictingDecl->Node::ToString(), *param);
+			return nullptr;
+		}
+
+		if (!RequireToken(TokenType::RParen)) return nullptr;
+
+		break;
+	}
+	case TokenType::RParen: {
+		lexer.Advance();
+		break;
+	}
+	default: {
+		PushErr("expected an identifier or a ')'", nextToken);
+		return nullptr;
+	}
+	}
 
 	// add symbol before block to allow for recursion
 	ASSERT(symbols);
@@ -219,7 +263,7 @@ ref<AST::Procedure> Parser::ParseProcedure(SymbolTable* symbols) {
 		return nullptr;
 	}
 
-	auto block = ParseBlock(symbols);
+	auto block = ParseBlock(bodySymbols);
 	if (!block) return nullptr;
 	proc->body = block;
 
@@ -396,6 +440,17 @@ ref<AST::Expression> Parser::ParseCondition(SymbolTable* symbols) {
 }
 
 ref<AST::Sequence> Parser::ParseBlock(SymbolTable* symbols) {
+	if (!RequireToken(TokenType::LBrace)) return nullptr;
+
+	auto seq = ParseSequence(symbols);
+	if (!seq) return nullptr;
+
+	if (!RequireToken(TokenType::RBrace)) return nullptr;
+
+	return seq;
+}
+
+ref<AST::Sequence> Parser::ParseBlock(ref<SymbolTable>& symbols) {
 	if (!RequireToken(TokenType::LBrace)) return nullptr;
 
 	auto seq = ParseSequence(symbols);

@@ -30,9 +30,6 @@ ref<AST::Procedure> SymbolTable::AddProc(ref<AST::Procedure> def) {
 	auto [procIter, success] = procedures.emplace(std::make_pair(def->identifier, def));
 	if (success) {
 		Resolve(def);
-		for (auto child : children) {
-			child->Resolve(def);
-		}
 		return nullptr;
 	}
 	else {
@@ -84,5 +81,8 @@ void SymbolTable::Resolve(ref<AST::Procedure> def) {
 	if (unresolvedIter != unresolvedCalls.end()) {
 		// could resolve all calls here if they would require a reference to the def
 		unresolvedCalls.erase(unresolvedIter);
+	}
+	for (auto child : children) {
+		child->Resolve(def);
 	}
 }

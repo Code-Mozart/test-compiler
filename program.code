@@ -1,15 +1,21 @@
 // for now:
-// all procedures are void and may not take arguments
+// all procedures are void and may only take one argument
 
-proc main() {
-	my_print(5);
+proc main() {	
 	def_after_call();
+	var i = 0;
+	while (i < 5) {
+		forward(i);
+		i = i + 1;
+	}
 }
 
 proc def_after_call() {
 	print(12345);
 }
 
-proc my_print(num) {
+proc my_print(var num) {
 	print(num);
 }
+
+proc forward(var x) { my_print(x); }

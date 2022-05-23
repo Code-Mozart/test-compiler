@@ -1,10 +1,26 @@
+call 16
+push 22
+load 0
 push 5
-call 7
-call 4
+lt
+jz 9
+load 0
+call -1
+pop
+load 1
+push 1
+add
+str 2
+jmp -11
+pop
 stop
 push 12345
 cout
 ret
-push 11111
+load 1
 cout
+ret
+load 1
+call 19
+pop
 ret

@@ -36,6 +36,20 @@ void PrintMessages(const ErrorHandler& errh) {
 	}
 }
 
+void AddBuiltinProcedure(SymbolTable& symbols, const string& identifier, const vector<string>& params) {
+	auto proc = RefTo<AST::Procedure>();
+	proc->identifier = identifier;
+	for (const auto& paramIdent : params) {
+		auto param = RefTo<AST::Declaration>();
+		param->identifier = paramIdent;
+		proc->parameters.emplace_back(param);
+	}
+
+	if (symbols.AddProc(proc)) {
+		throw IncorrectImplException(__FILE__, __LINE__, "Builtin procedure '" + identifier + "' added multiple times");
+	}
+}
+
 int main(int argc, char** argv) {
 	try {
 		ErrorHandler errh;
@@ -65,9 +79,7 @@ int main(int argc, char** argv) {
 
 			// create symbol table and fill in built-in symbols
 			SymbolTable builtIns;
-			auto builtinPrint = RefTo<AST::Procedure>();
-			builtinPrint->identifier = "print";
-			builtIns.AddProc(builtinPrint);
+			AddBuiltinProcedure(builtIns, "print", { "num" });
 
 			auto root = Parser(info, lexer, errh).BuildAST(&builtIns);
 			if (!root) {

@@ -22,7 +22,7 @@ public:
 			return size - locations.at(identifier).second;
 		}
 		catch (const std::out_of_range& e) {
-			throw IncorrectImplException(__FILE__, __LINE__, "predicted stack didnt contain var");
+			throw IncorrectImplException(__FILE__, __LINE__, "predicted stack didnt contain var '" + identifier + "'");
 		}
 	}
 private:

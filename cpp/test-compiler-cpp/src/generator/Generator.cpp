@@ -5,6 +5,11 @@
 
 using namespace AST;
 
+PRODUCES COMPILER ERROR;
+// @solve: copying instructions from one list to another breaks the index-based
+//         memorizing of unresolved calls (calls where the argument is not yet decided because
+//         it is unknown how many instructions will follow)
+
 string CodeGenerator::Generate(ref<Container> cont) {
 	ASSERT(cont);
 
@@ -146,16 +151,25 @@ vector<Instruction>& CodeGenerator::Generate(ref<Node> node, vector<Instruction>
 	}
 	case Type::Call: {
 		const auto& call = (Call&)*node;
+
+		// push all arguments
 		for (const auto& arg : call.args) {
 			Generate(arg, instructions, stack, phh);
 		}
+
 		if (call.identifier == "print") {
 			instructions.emplace_back(Instruction{ Operation::ConsoleOut });
 			stack.Shrink();
 		}
 		else {
 			instructions.emplace_back(Instruction{ Operation::Call, phh.AddUsage(call.identifier, instructions.size()) });
+			
+			// pop all arguments
+			for (int i = 0; i < call.args.size(); i++) {
+				instructions.emplace_back(Instruction{ Operation::Pop });
+			}
 		}
+
 		break;
 	}
 
@@ -208,15 +222,25 @@ vector<Instruction>& CodeGenerator::Generate(ref<Node> node, vector<Instruction>
 		}
 
 		stack.EnterScope(node);
-		// because program counter is pushed
-		stack.Grow();
+		for (const auto& param : proc.parameters) {
+			stack.PutVar(param->identifier);
+		}
+		
+		if (proc.identifier != "main") {
+			// because program counter is pushed
+			stack.Grow();
+		}
 		// @refactor: replace with Generate(proc.body)
 		for (const auto& stm : proc.body->statements) {
 			Generate(stm, instructions, stack, phh);
 		}
-		// stack pointer gets popped
-		stack.Shrink();
+		if (proc.identifier != "main") {
+			// stack pointer gets popped
+			stack.Shrink();
+		}
 		byte popCount = stack.ExitScope();
+		// arguments are popped on call site
+		popCount -= proc.parameters.size();
 		for (byte i = 0; i < popCount; i++)
 			instructions.emplace_back(Instruction{ Operation::Pop });
 

@@ -18,6 +18,7 @@ private:
 	ref<AST::Statement> ParseStatement(SymbolTable* symbols);
 	ref<AST::Expression> ParseExpression(SymbolTable* symbols, short minPrec = -1);
 	ref<AST::Sequence> ParseSequence(SymbolTable* symbols);
+	ref<AST::Sequence> ParseSequence(ref<SymbolTable>& symbols);
 	ref<AST::Procedure> ParseProcedure(SymbolTable* symbols);
 
 	ref<AST::Declaration> ParseDeclaration(SymbolTable* symbols);
@@ -29,6 +30,7 @@ private:
 	ref<AST::Expression> ParsePrimary(SymbolTable* symbols);
 	ref<AST::Expression> ParseCondition(SymbolTable* symbols);
 	ref<AST::Sequence> ParseBlock(SymbolTable* symbols);
+	ref<AST::Sequence> ParseBlock(ref<SymbolTable>& symbols);
 	
 
 	bool RequireToken(const Token* token, TokenType type, const string& errMsg);

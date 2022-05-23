@@ -12,19 +12,25 @@ bool Analyzer::ValidateAST(ref<Container> cont) {
 		return false;
 	}
 	for (auto proc : cont->procedures) {
-		if (!ValidateProcedure(proc)) return false;
+		if (!ValidateProcedure(proc, cont->symbols.get())) return false;
 	}
 	return true;
 }
 
-bool Analyzer::ValidateProcedure(ref<Procedure> proc) {
+bool Analyzer::ValidateProcedure(ref<Procedure> proc, SymbolTable* symbols) {
 	ASSERT(proc);
-	return ValidateSequence(proc->body);
+	ASSERT(symbols);
+	for (const auto& param : proc->parameters) {
+		if (!ValidateDeclaration(param, symbols));
+	}
+	return ValidateSequence(proc->body, symbols);
 }
 
-bool Analyzer::ValidateSequence(ref<Sequence> seq) {
+bool Analyzer::ValidateSequence(ref<Sequence> seq, SymbolTable* symbols) {
 	ASSERT(seq);
 	ASSERT(seq->symbols);
+	ASSERT(symbols);
+	// ASSERT(seq->symbols->pParent == symbols);
 
 	const map<string, vector<ref<Call>>>& unresolvedCalls = seq->symbols->GetUnresolvedCalls();
 	for (const auto& p : unresolvedCalls) {
@@ -35,19 +41,20 @@ bool Analyzer::ValidateSequence(ref<Sequence> seq) {
 	if (!unresolvedCalls.empty()) return false;
 	
 	for (auto stm : seq->statements) {
-		if (!ValidateStatement(stm)) return false;
+		if (!ValidateStatement(stm, seq->symbols.get())) return false;
 	}
 	return true;
 }
 
-bool Analyzer::ValidateStatement(ref<Statement> stm) {
+bool Analyzer::ValidateStatement(ref<Statement> stm, SymbolTable* symbols) {
 	ASSERT(stm);
+	ASSERT(symbols);
 	switch (stm->GetType()) {
-	case Type::Declaration:		return ValidateDeclaration(	CastTo<Declaration>(stm));
-	case Type::While:			return ValidateWhile(		CastTo<While>(stm));
-	case Type::IfElse:			return ValidateIfElse(		CastTo<IfElse>(stm));
-	case Type::Assignment:		return ValidateAssignment(	CastTo<Assignment>(stm));
-	case Type::Call:			return ValidateCall(		CastTo<Call>(stm));
+	case Type::Declaration:		return ValidateDeclaration(	CastTo<Declaration>(stm), symbols);
+	case Type::While:			return ValidateWhile(		CastTo<While>(stm), symbols);
+	case Type::IfElse:			return ValidateIfElse(		CastTo<IfElse>(stm), symbols);
+	case Type::Assignment:		return ValidateAssignment(	CastTo<Assignment>(stm), symbols);
+	case Type::Call:			return ValidateCall(		CastTo<Call>(stm), symbols);
 	default: {
 		if (stm->IsType(Type::Statement)) {
 			throw IncorrectImplException(__FILE__, __LINE__,
@@ -61,10 +68,11 @@ bool Analyzer::ValidateStatement(ref<Statement> stm) {
 	}
 }
 
-bool Analyzer::ValidateExpression(ref<Expression> expr) {
+bool Analyzer::ValidateExpression(ref<Expression> expr, SymbolTable* symbols) {
 	ASSERT(expr);
+	ASSERT(symbols);
 	switch (expr->GetType()) {
-	case Type::BinOp:		return ValidateBinaryOperator(	CastTo<BinaryOperator>(expr));
+	case Type::BinOp:		return ValidateBinaryOperator(	CastTo<BinaryOperator>(expr), symbols);
 	case Type::Const:		return ValidateConstant(		CastTo<Constant>(expr));
 	case Type::Var:			return ValidateVariable(		CastTo<Variable>(expr));
 	default: {
@@ -80,42 +88,66 @@ bool Analyzer::ValidateExpression(ref<Expression> expr) {
 	}
 }
 
-bool Analyzer::ValidateDeclaration(ref<Declaration> decl) {
+bool Analyzer::ValidateDeclaration(ref<Declaration> decl, SymbolTable* symbols) {
 	ASSERT(decl);
-	return ValidateExpression(decl->value);
+	ASSERT(symbols);
+	return decl->value ? ValidateExpression(decl->value, symbols) : true;
 }
 
-bool Analyzer::ValidateWhile(ref<While> whileStm) {
+bool Analyzer::ValidateWhile(ref<While> whileStm, SymbolTable* symbols) {
 	ASSERT(whileStm);
-	return ValidateExpression(whileStm->condition)
-		&& ValidateSequence(whileStm->body);
+	ASSERT(symbols);
+	return ValidateExpression(whileStm->condition, symbols)
+		&& ValidateSequence(whileStm->body, symbols);
 }
 
-bool Analyzer::ValidateIfElse(ref<IfElse> ifElse) {
+bool Analyzer::ValidateIfElse(ref<IfElse> ifElse, SymbolTable* symbols) {
 	ASSERT(ifElse);
-	return ValidateExpression(ifElse->condition)
-		&& ValidateSequence(ifElse->ifBody)
-		&& (ifElse->elseBody ? ValidateSequence(ifElse->elseBody) : true);
+	ASSERT(symbols);
+	return ValidateExpression(ifElse->condition, symbols)
+		&& ValidateSequence(ifElse->ifBody, symbols)
+		&& (ifElse->elseBody ? ValidateSequence(ifElse->elseBody, symbols) : true);
 }
 
-bool Analyzer::ValidateAssignment(ref<Assignment> assignm) {
+bool Analyzer::ValidateAssignment(ref<Assignment> assignm, SymbolTable* symbols) {
 	ASSERT(assignm);
-	return ValidateExpression(assignm->value);
+	ASSERT(symbols);
+	return ValidateExpression(assignm->value, symbols);
 }
 
-bool Analyzer::ValidateCall(ref<Call> call) {
+bool Analyzer::ValidateCall(ref<Call> call, SymbolTable* symbols) {
 	ASSERT(call);
-	for (auto arg : call->args) {
-		if (!ValidateExpression(arg)) return false;
+	ASSERT(symbols);
+
+	auto proc = symbols->GetProc(call->identifier);
+	// unresolved symbol should be handled already
+	ASSERT(proc);
+	size_t nArgs = call->args.size();
+	size_t nParams = proc->parameters.size();
+	if (nArgs < nParams) {
+		errh.PushErr("procedure '" + proc->identifier + "' has " + std::to_string(nParams)
+			+ " parameters, but only " + std::to_string(nArgs) + " arguments are passed", *call);
+		return false;
 	}
+	else if (nArgs > nParams) {
+		errh.PushErr("procedure '" + proc->identifier + "' has only " + std::to_string(nParams)
+			+ " parameters, but " + std::to_string(nArgs) + " arguments are passed", *call);
+		return false;
+	}
+
+	for (auto arg : call->args) {
+		if (!ValidateExpression(arg, symbols)) return false;
+	}
+
 	return true;
 }
 
 
-bool Analyzer::ValidateBinaryOperator(ref<BinaryOperator> binOp) {
+bool Analyzer::ValidateBinaryOperator(ref<BinaryOperator> binOp, SymbolTable* symbols) {
 	ASSERT(binOp);
-	return ValidateExpression(binOp->lhs)
-		&& ValidateExpression(binOp->rhs);
+	ASSERT(symbols);
+	return ValidateExpression(binOp->lhs, symbols)
+		&& ValidateExpression(binOp->rhs, symbols);
 }
 
 bool Analyzer::ValidateConstant(ref<Constant> cnst) {

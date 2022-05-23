@@ -13,10 +13,12 @@ namespace AST {
 		inline virtual string ToString(byte indent = 0) const {
 			return Node::ToString(indent)
 				+ GetIndentString(indent + 1) + "ident: " + identifier + "\n"
-				+ value->ToString(indent + 1);
+				+ (value ? value->ToString(indent + 1) : "");
 		}
 	public:
 		string identifier;
+		
+		// nullable
 		ref<Expression> value;
 	};
 
