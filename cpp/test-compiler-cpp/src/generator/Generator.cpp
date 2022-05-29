@@ -5,21 +5,21 @@
 
 using namespace AST;
 
-PRODUCES COMPILER ERROR;
-// @solve: copying instructions from one list to another breaks the index-based
-//         memorizing of unresolved calls (calls where the argument is not yet decided because
-//         it is unknown how many instructions will follow)
-
 string CodeGenerator::Generate(ref<Container> cont) {
 	ASSERT(cont);
+	ASSERT(cont->symbols);
 
 	vector<Instruction> instructions;
-	RuntimeStack stack;
+	RuntimePrediction stack;
 	PlaceholderHandler phh;
-	phh.Resolve("main", 0, instructions);
 
-	ASSERT(cont->symbols);
+	// enter global scope
+	phh.EnterScope();
+	
+	// generate main
 	auto mainProcNode = cont->symbols->GetProc("main");
+	ASSERT(mainProcNode);
+	phh.Resolve("main", 0, instructions);
 	Generate(mainProcNode, instructions, stack, phh);
 	instructions.emplace_back(Instruction{ Operation::Stop });
 
@@ -29,8 +29,10 @@ string CodeGenerator::Generate(ref<Container> cont) {
 		}
 	}
 
+	// assert all pending usages are resolved now
 	phh.AssertNothingUnresolved();
 
+	// write the instructions
 	string bytecode;
 	for (const auto& instr : instructions) {
 		bytecode += ToString(instr.op);
@@ -42,7 +44,7 @@ string CodeGenerator::Generate(ref<Container> cont) {
 	return bytecode;
 }
 
-vector<Instruction>& CodeGenerator::Generate(ref<Node> node, vector<Instruction>& instructions, RuntimeStack& stack, PlaceholderHandler& phh) {
+vector<Instruction>& CodeGenerator::Generate(ref<Node> node, vector<Instruction>& instructions, RuntimePrediction& stack, PlaceholderHandler& phh) {
 	if (!node) throw NullptrException("node is null");
 	
 	switch (node->GetType())
@@ -81,6 +83,7 @@ vector<Instruction>& CodeGenerator::Generate(ref<Node> node, vector<Instruction>
 		// shrink stack as if the condition result had been processed already
 		stack.Shrink();
 		stack.EnterScope(node);
+		phh.EnterScope();
 		// @refactor: replace with Generate(whileStm.body)
 		for (const auto& stm : whileStm.body->statements) {
 			Generate(stm, bodyInstructions, stack, phh);
@@ -93,8 +96,12 @@ vector<Instruction>& CodeGenerator::Generate(ref<Node> node, vector<Instruction>
 		// writing the instr JZ to jump over the while body if the condition is NOT met
 		instructions.emplace_back(Instruction{ Operation::JumpIf0, (short)(bodyInstructions.size() + 2) });
 		stack.Shrink();
-		for (const auto& instr : bodyInstructions)
+		
+		phh.ExitScope(instructions.size());
+		for (const auto& instr : bodyInstructions) {
 			instructions.emplace_back(instr);
+		}
+		
 		instructions.emplace_back(Instruction{ Operation::Jump, (short)(count - instructions.size()) });
 
 		break;
@@ -109,6 +116,7 @@ vector<Instruction>& CodeGenerator::Generate(ref<Node> node, vector<Instruction>
 		// shrink stack as if the condition result had been processed already
 		stack.Shrink();
 		stack.EnterScope(node);
+		phh.EnterScope();
 		// @refactor: replace with Generate(ifStm.ifBody)
 		for (const auto& stm : ifStm.ifBody->statements) {
 			Generate(stm, ifBodyInstructions, stack, phh);
@@ -125,26 +133,32 @@ vector<Instruction>& CodeGenerator::Generate(ref<Node> node, vector<Instruction>
 			(short)(ifBodyInstructions.size() + 1 + (ifStm.elseBody != nullptr))
 			});
 		stack.Shrink();
-		for (const auto& instr : ifBodyInstructions)
+		phh.ExitScope(instructions.size());
+		for (const auto& instr : ifBodyInstructions) {
 			instructions.emplace_back(instr);
+		}
 
 		// @later: replace with null check to scope/sequence
 		if (ifStm.elseBody) {
 			vector<Instruction> elseBodyInstructions;
 			stack.EnterScope(node);
+			phh.EnterScope();
 			// @refactor: replace with Generate(ifStm.elseBody)
 			for (const auto& stm : ifStm.elseBody->statements) {
 				Generate(stm, elseBodyInstructions, stack, phh);
 			}
 			byte popCount = stack.ExitScope();
-			for (byte i = 0; i < popCount; i++)
+			for (byte i = 0; i < popCount; i++) {
 				elseBodyInstructions.emplace_back(Instruction{ Operation::Pop });
+			}
 
 			// writing the instr JMP to jump over the else body from the end of the if body
 			instructions.emplace_back(Instruction{ Operation::Jump, (short)(elseBodyInstructions.size() + 1) });
-
-			for (const auto& instr : elseBodyInstructions)
+			
+			phh.ExitScope(instructions.size());
+			for (const auto& instr : elseBodyInstructions) {
 				instructions.emplace_back(instr);
+			}
 		}
 
 		break;
@@ -168,6 +182,7 @@ vector<Instruction>& CodeGenerator::Generate(ref<Node> node, vector<Instruction>
 			for (int i = 0; i < call.args.size(); i++) {
 				instructions.emplace_back(Instruction{ Operation::Pop });
 			}
+			stack.Shrink(call.args.size());
 		}
 
 		break;
@@ -241,8 +256,9 @@ vector<Instruction>& CodeGenerator::Generate(ref<Node> node, vector<Instruction>
 		byte popCount = stack.ExitScope();
 		// arguments are popped on call site
 		popCount -= proc.parameters.size();
-		for (byte i = 0; i < popCount; i++)
+		for (byte i = 0; i < popCount; i++) {
 			instructions.emplace_back(Instruction{ Operation::Pop });
+		}
 
 		if (proc.identifier != "main") {
 			instructions.emplace_back(Instruction{ Operation::Return });

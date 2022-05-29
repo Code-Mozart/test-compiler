@@ -5,7 +5,7 @@
 #include "Exception.h"
 #include "semantic/ast/include.h"
 
-class RuntimeStack {
+class RuntimePrediction {
 public:
 	void PutVar(const string& identifier);
 	inline void Grow(byte amount = 1) { size += amount; }

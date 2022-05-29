@@ -1,16 +1,16 @@
 call 16
-push 22
+push 0
 load 0
 push 5
 lt
 jz 9
 load 0
-call -1
+call 22
 pop
-load 1
+load 0
 push 1
 add
-str 2
+str 1
 jmp -11
 pop
 stop

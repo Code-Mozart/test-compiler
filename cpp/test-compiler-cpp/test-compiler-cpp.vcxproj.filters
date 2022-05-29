@@ -42,9 +42,6 @@
     <ClCompile Include="src\generator\Generator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="src\generator\RuntimeStack.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="src\errh\ErrorHandler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -52,6 +49,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\generator\PlaceholderHandler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\generator\RuntimePrediction.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -137,9 +137,6 @@
     <ClInclude Include="src\generator\Generator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\generator\RuntimeStack.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\generator\Instruction.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -162,6 +159,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="src\generator\PlaceholderHandler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\generator\RuntimePrediction.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

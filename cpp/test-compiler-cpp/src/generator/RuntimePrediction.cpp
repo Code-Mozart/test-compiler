@@ -1,6 +1,6 @@
-#include "RuntimeStack.h"
+#include "RuntimePrediction.h"
 
-void RuntimeStack::PutVar(const string& identifier)
+void RuntimePrediction::PutVar(const string& identifier)
 {
 	if (scopes.empty()) throw IncorrectImplException(
 		__FILE__, __LINE__, "putting var in scope, while not inside any scope");
@@ -10,7 +10,7 @@ void RuntimeStack::PutVar(const string& identifier)
 		"multiple occurences of the same var " + identifier + " on the predicted runtime stack");
 }
 
-byte RuntimeStack::ExitScope()
+byte RuntimePrediction::ExitScope()
 {
 	if (scopes.empty()) throw IncorrectImplException(
 		__FILE__, __LINE__, "exiting scope, while not inside any scope");

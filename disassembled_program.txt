@@ -1,0 +1,46 @@
+	; proc main() {
+	;    def_after_call();
+0	call 16
+	;    var i = 0;
+1	push 0
+	;    while(i < 5) {
+2	load 0
+3	push 5
+4	lt
+5	jz 9
+	;       forward(i);
+6	load 0
+7	call 22
+8	pop
+	;       i = i + 1;
+9	load 1
+10	push 1
+11	add
+12	str 2
+	;    }
+13	jmp -11
+	; }
+14	pop
+15	stop
+
+	; proc def_after_call() {
+	;    print(12345);
+16	push 12345
+17	cout
+	; }
+18	ret
+
+	; proc my_print(var num) {
+	;    print(num);
+19	load 1
+20	cout
+	; }
+21	ret
+
+	; proc forward(var x) {
+	;    my_print(x);
+22	load 1
+23	call 19
+24	pop
+	; }
+25	ret

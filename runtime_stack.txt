@@ -1,0 +1,79 @@
+0	call 16
+		0		stack ptr
+16	push 12345
+		0		stack ptr
+		12345	immediate
+17	cout
+		0		stack ptr
+18	ret
+1	push 0
+		0		var i
+2	load 0
+		0		var i
+		0		i copy
+3	push 5
+		0		var i
+		0		i copy
+		5		immediate
+4	lt
+		0		var i
+		1		lt result
+5	jz 9
+		0		var i
+6	load 0
+		0		var i
+		0		param x
+7	call 22
+		0		var i
+		0		param x
+		7		stack ptr
+22	load 1
+		0		var i
+		0		param x
+		7		stack ptr
+		0		param num
+23	call 19
+		0		var i
+		0		param x
+		7		stack ptr
+		0		param num
+		23		stack ptr
+19	load 1
+		0		var i
+		0		param x
+		7		stack ptr
+		0		param num
+		23		stack ptr
+		0		num copy
+20	cout
+		0		var i
+		0		param x
+		7		stack ptr
+		0		param num
+		23		stack ptr
+21	ret
+		0		var i
+		0		param x
+		7		stack ptr
+		0		param num
+24	pop
+		0		var i
+		0		param x
+		7		stack ptr
+25	ret
+		0		var i
+		0		param x
+8	pop
+		0		var i
+9	load 1
+		0		var i
+		0		i copy
+10	push 1
+		0		var i
+		0		i copy
+		1		immediate
+11	add
+		0		var i
+		1		add result
+12	str 2
+		### ERROR ###

@@ -162,7 +162,7 @@
     <ClCompile Include="src\errh\ErrorHandler.cpp" />
     <ClCompile Include="src\errh\Message.cpp" />
     <ClCompile Include="src\generator\PlaceholderHandler.cpp" />
-    <ClCompile Include="src\generator\RuntimeStack.cpp" />
+    <ClCompile Include="src\generator\RuntimePrediction.cpp" />
     <ClCompile Include="src\semantic\Analyzer.cpp" />
     <ClCompile Include="src\semantic\ast\ASTType.cpp" />
     <ClCompile Include="src\io\FileHandler.cpp" />
@@ -177,7 +177,7 @@
     <ClInclude Include="src\Common.h" />
     <ClInclude Include="src\generator\Instruction.h" />
     <ClInclude Include="src\generator\PlaceholderHandler.h" />
-    <ClInclude Include="src\generator\RuntimeStack.h" />
+    <ClInclude Include="src\generator\RuntimePrediction.h" />
     <ClInclude Include="src\io\FileInfo.h" />
     <ClInclude Include="src\semantic\Analyzer.h" />
     <ClInclude Include="src\semantic\ast\Assignment.h" />
