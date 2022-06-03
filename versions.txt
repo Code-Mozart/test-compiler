@@ -14,8 +14,10 @@
 	1.4			maintenance
 	
 	2.0			procedures
-->	2.1			procedure arguments
-	2.2			return values
-	2.3			operators ==, !=, >, <=, >=
+	2.1			procedure arguments
+->	2.2			compiler as library
+				disassembler
+	2.3			return values
+	2.4			operators ==, !=, >, <=, >=
 	
 	3.0			types
