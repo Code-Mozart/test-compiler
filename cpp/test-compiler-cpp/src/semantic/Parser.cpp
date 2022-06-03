@@ -38,6 +38,16 @@ static bool HasHigherPrecedence(const Token& op1, const Token& op2) {
 	return (op1Prec < op2Prec) || (op1Prec == op2Prec && IsLeftAsociative(op1.text[0]));
 }
 
+static bool IsTerminatingExpression(const TokenType type) {
+	switch (type) {
+	case TokenType::RParen:
+	case TokenType::Comma:
+		return true;
+	default:
+		return false;
+	}
+}
+
 bool Parser::RequireToken(const Token* token, TokenType type, const string& errMsg) {
 	if (!token) {
 		return false;
@@ -55,6 +65,15 @@ bool Parser::RequireOperator(const Token* token, ASTOperator op) {
 	if (!token) return false;
 	return RequireToken(token, TokenType::Operator, string() + "expected a '" + ((char)op) + "'")
 		&& ((ASTOperator)token->text[0] == op);
+}
+
+bool Parser::RequireKeyword(const Token* token, const string& keyword) {
+	if (!token) return false;
+	if (token->type != TokenType::Identifier || token->text != keyword) {
+		PushErr("expected the keyword '" + keyword + "'", token);
+		return false;
+	}
+	return true;
 }
 
 void Parser::PushErr(const string& text, const Token* tkn) {
@@ -161,7 +180,7 @@ ref<AST::Expression> Parser::ParseExpression(SymbolTable* symbols, short minPrec
 		if (prec > minPrec) {
 			lexer.Advance();
 			auto rhs = ParseExpression(symbols, prec);
-			if (lexer.HasCurrent() && minPrec == 0 && lexer.Peek()->type == TokenType::RParen) {
+			if (lexer.HasCurrent() && minPrec == 0 && IsTerminatingExpression(lexer.Peek()->type)) {
 				// discard rparen
 				lexer.Advance();
 			}
@@ -216,16 +235,14 @@ ref<AST::Procedure> Parser::ParseProcedure(SymbolTable* symbols) {
 
 	auto bodySymbols = RefTo<SymbolTable>(symbols);
 
-	const Token* nextToken = lexer.Peek();
-	if (!nextToken) return nullptr;
-	switch (nextToken->type) {
-	case TokenType::Identifier: {
-		if (nextToken->text != Keywords::VarDecl) {
-			PushErr("illegal token '" + nextToken->ToString() + "'", nextToken);
-			return nullptr;
+	while (lexer.HasCurrent() && lexer.Peek()->type != TokenType::RParen) {
+		if (!proc->parameters.empty()) {
+			if (!RequireComma()) return nullptr;
 		}
-		
-		const Token* paramToken = lexer.AdvanceAndPeek();
+
+		if (!RequireKeyword(Keywords::VarDecl)) return nullptr;
+
+		const Token* paramToken = lexer.Peek();
 		if (!RequireIdentifier(paramToken)) return nullptr;
 		lexer.Advance();
 
@@ -239,20 +256,9 @@ ref<AST::Procedure> Parser::ParseProcedure(SymbolTable* symbols) {
 				+ conflictingDecl->Node::ToString(), *param);
 			return nullptr;
 		}
+	}
 
-		if (!RequireToken(TokenType::RParen)) return nullptr;
-
-		break;
-	}
-	case TokenType::RParen: {
-		lexer.Advance();
-		break;
-	}
-	default: {
-		PushErr("expected an identifier or a ')'", nextToken);
-		return nullptr;
-	}
-	}
+	if (!RequireToken(TokenType::RParen)) return nullptr;
 
 	// add symbol before block to allow for recursion
 	ASSERT(symbols);
@@ -383,11 +389,14 @@ ref<AST::Call> Parser::ParseCall(SymbolTable* symbols, const Token* identTkn) {
 	ASSERT(lparenTkn->type == TokenType::LParen);
 	lexer.Advance();
 
-	if (lexer.HasCurrent() && lexer.Peek()->type != TokenType::RParen) {
-		auto arg1 = ParseExpression(symbols);
-		if (!arg1) return nullptr;
+	while (lexer.HasCurrent() && lexer.Peek()->type != TokenType::RParen) {
+		if (!call->args.empty()) {
+			if (!RequireComma()) return nullptr;
+		}
+		auto arg = ParseExpression(symbols);
+		if (!arg) return nullptr;
 
-		call->args.emplace_back(arg1);
+		call->args.emplace_back(arg);
 	}
 
 	if (!RequireToken(TokenType::RParen)) return nullptr;

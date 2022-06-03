@@ -1,26 +1,24 @@
-call 16
+push 5
+push 8
+push 4
+call 8
+pop
+pop
+pop
+stop
 push 0
 load 0
-push 5
+load 3
 lt
-jz 9
-load 0
-call 22
-pop
+jz 10
+load 4
+load 4
+add
+cout
 load 0
 push 1
 add
 str 1
-jmp -11
-pop
-stop
-push 12345
-cout
-ret
-load 1
-cout
-ret
-load 1
-call 19
+jmp -12
 pop
 ret

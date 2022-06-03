@@ -1,46 +1,31 @@
-	; proc main() {
-	;    def_after_call();
-0	call 16
-	;    var i = 0;
-1	push 0
-	;    while(i < 5) {
-2	load 0
-3	push 5
-4	lt
-5	jz 9
-	;       forward(i);
-6	load 0
-7	call 22
-8	pop
-	;       i = i + 1;
-9	load 1
-10	push 1
-11	add
-12	str 2
-	;    }
-13	jmp -11
-	; }
-14	pop
-15	stop
+	# proc main() {
+	#    print_n_times(5, 3);
+0	push 5
+1	push 3
+2	call 6
+3	pop
+4	pop
+	# }
+5	stop
 
-	; proc def_after_call() {
-	;    print(12345);
-16	push 12345
-17	cout
-	; }
-18	ret
-
-	; proc my_print(var num) {
-	;    print(num);
-19	load 1
-20	cout
-	; }
-21	ret
-
-	; proc forward(var x) {
-	;    my_print(x);
-22	load 1
-23	call 19
-24	pop
-	; }
-25	ret
+	# proc print_n_times(var num, var times) {
+	#    var i = 0;
+6	push 0
+	#    while (i < times) {
+7	load 0
+8	load 3
+9	lt
+10	jz 8
+	#       print(num);
+11	load 2
+12	cout
+	#       i = i + 1;
+13	load 0
+14	push 1
+15	add
+16	str 1
+	#    }
+17	jmp -10
+	# }
+18	pop
+19	ret

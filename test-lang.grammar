@@ -13,7 +13,9 @@ x
 ("proc")
 (IDENTIFIER)
 ("(")
-optional 'parameter'
+optional loop 'parameter'
+	on repeat
+		(",")
 	("var")
 	(IDENTIFIER)
 (")")
@@ -43,7 +45,9 @@ case 'single'
 	or 'call'
 		(IDENTIFIER)
 		("(")
-		optional 'arg'
+		optional loop 'args'
+			on repeat
+				(",")
 			[expression]
 		(")")
 	(";")

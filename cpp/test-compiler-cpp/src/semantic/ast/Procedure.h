@@ -12,7 +12,7 @@ namespace AST {
 			return Type::Procedure;
 		}
 		inline virtual string ToString(byte indent = 0) const {
-			string s = Node::ToString(indent);
+			string s;
 			for (const auto& param : parameters)
 				s += param->ToString(indent + 1);
 			return Node::ToString(indent)

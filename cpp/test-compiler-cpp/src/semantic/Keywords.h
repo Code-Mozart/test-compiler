@@ -3,7 +3,6 @@
 #include "util/Util.h"
 
 namespace Keywords {
-
 	static const string ProcDecl = "proc";
 	static const string VarDecl = "var";
 	static const string WhileStm = "while";

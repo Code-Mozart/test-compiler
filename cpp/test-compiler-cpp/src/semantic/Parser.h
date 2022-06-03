@@ -35,6 +35,7 @@ private:
 
 	bool RequireToken(const Token* token, TokenType type, const string& errMsg);
 	bool RequireOperator(const Token* token, AST::ASTOperator op);
+	bool RequireKeyword(const Token* token, const string& keyword);
 	inline bool RequireIdentifier(const Token* token) {
 		return RequireToken(token, TokenType::Identifier, "expected an identifier");
 	}
@@ -48,11 +49,17 @@ private:
 	inline bool RequireOperator(AST::ASTOperator op) {
 		return RequireOperator(lexer.Advance(), op);
 	}
+	inline bool RequireKeyword(const string& keyword) {
+		return RequireKeyword(lexer.Advance(), keyword);
+	}
 	inline bool RequireIdentifier() {
 		return RequireIdentifier(lexer.Advance());
 	}
 	inline bool RequireSemicolon() {
 		return RequireToken(lexer.Advance(), TokenType::Semicolon, "expected a ';'");
+	}
+	inline bool RequireComma() {
+		return RequireToken(lexer.Advance(), TokenType::Comma, "expected a ','");
 	}
 
 	template<typename T>

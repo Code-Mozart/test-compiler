@@ -12,6 +12,7 @@ string ToString(TokenType type) {
 	case TokenType::LBrace:			return "LBrace";
 	case TokenType::RBrace:			return "RBrace";
 	case TokenType::Semicolon:		return "Semicolon";
+	case TokenType::Comma:			return "Comma";
 	}
 	throw IncorrectImplException(__FILE__, __LINE__, "enum case not handled");
 }
@@ -23,6 +24,7 @@ char ToChar(TokenType type) {
 	case TokenType::LBrace:			return '{';
 	case TokenType::RBrace:			return '}';
 	case TokenType::Semicolon:		return ';';
+	case TokenType::Comma:			return ',';
 	}
 	throw IncorrectImplException(__FILE__, __LINE__, "enum case not handled");
 }

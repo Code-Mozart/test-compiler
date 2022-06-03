@@ -1,21 +1,14 @@
 // for now:
 // all procedures are void and may only take one argument
 
-proc main() {	
-	def_after_call();
+proc main() {
+	print_sum_n_times(5, 8, 4);
+}
+
+proc print_sum_n_times(var num1, var num2, var times) {
 	var i = 0;
-	while (i < 5) {
-		forward(i);
+	while (i < times) {
+		print(num1 + num2);
 		i = i + 1;
 	}
 }
-
-proc def_after_call() {
-	print(12345);
-}
-
-proc my_print(var num) {
-	print(num);
-}
-
-proc forward(var x) { my_print(x); }

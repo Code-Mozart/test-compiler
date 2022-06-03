@@ -2,7 +2,7 @@
 
 static const vector<char> delimiters = {
 	' ', '\n', '\t',
-	';',
+	';', ',',
 	'(', ')', '{', '}',
 	'=', '<', '>',
 	'+', '-', '*', '/'
@@ -165,6 +165,7 @@ const vector<Token> Lexer::Tokenize() {
 			switch (c)
 			{
 			case ';':	type = TokenType::Semicolon;	break;
+			case ',':	type = TokenType::Comma;		break;
 
 			case '(':	type = TokenType::LParen;		break;
 			case ')':	type = TokenType::RParen;		break;

@@ -238,6 +238,7 @@ vector<Instruction>& CodeGenerator::Generate(ref<Node> node, vector<Instruction>
 
 		stack.EnterScope(node);
 		for (const auto& param : proc.parameters) {
+			stack.Grow();
 			stack.PutVar(param->identifier);
 		}
 		
@@ -253,6 +254,8 @@ vector<Instruction>& CodeGenerator::Generate(ref<Node> node, vector<Instruction>
 			// stack pointer gets popped
 			stack.Shrink();
 		}
+
+		stack.Shrink(proc.parameters.size());
 		byte popCount = stack.ExitScope();
 		// arguments are popped on call site
 		popCount -= proc.parameters.size();

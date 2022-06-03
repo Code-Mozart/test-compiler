@@ -1,0 +1,44 @@
+0	push 5
+		5		param num
+1	push 3
+		5		param num
+		3		param times
+2	call 6
+		5		param num
+		3		param times
+		2		stack ptr
+6	push 0
+		5		param num
+		3		param times
+		2		stack ptr
+		0		var i
+7	load 0
+		5		param num
+		3		param times
+		2		stack ptr
+		0		var i
+		0		i copy
+8	load 3
+		5		param num
+		3		param times
+		2		stack ptr
+		0		var i
+		0		i copy
+		3		times copy
+9	lt 8
+		5		param num
+		3		param times
+		2		stack ptr
+		0		var i
+		1		lt result
+10	jz 8
+		5		param num
+		3		param times
+		2		stack ptr
+		0		var i
+11	load 2
+		5		param num
+		3		param times
+		2		stack ptr
+		0		var i
+	### ERROR ###

@@ -6,7 +6,7 @@ enum class TokenType {
 	Identifier,
 	Literal,
 	LParen, RParen, Operator,
-	LBrace, RBrace, Semicolon
+	LBrace, RBrace, Semicolon, Comma
 };
 
 string ToString(TokenType type);
