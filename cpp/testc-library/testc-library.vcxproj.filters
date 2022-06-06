@@ -18,9 +18,6 @@
     <ClInclude Include="src\include.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\syntax\Syntax.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="src\syntax\Lexer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -30,12 +27,24 @@
     <ClInclude Include="src\Exception.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\syntax\LexerImpl.h">
+    <ClInclude Include="src\syntax\Token.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\Location.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\util\string_view.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\syntax\Syntax.cpp">
+    <ClCompile Include="src\syntax\Token.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\syntax\Lexer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\util\string_view.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

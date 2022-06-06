@@ -40,7 +40,7 @@
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
-    <ConfigurationType>Application</ConfigurationType>
+    <ConfigurationType>StaticLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
     <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
@@ -142,13 +142,16 @@
   <ItemGroup>
     <ClInclude Include="src\Exception.h" />
     <ClInclude Include="src\include.h" />
+    <ClInclude Include="src\Location.h" />
     <ClInclude Include="src\syntax\Lexer.h" />
-    <ClInclude Include="src\syntax\LexerImpl.h" />
-    <ClInclude Include="src\syntax\Syntax.h" />
+    <ClInclude Include="src\syntax\Token.h" />
+    <ClInclude Include="src\util\string_view.h" />
     <ClInclude Include="src\util\Util.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="src\syntax\Syntax.cpp" />
+    <ClCompile Include="src\syntax\Lexer.cpp" />
+    <ClCompile Include="src\syntax\Token.cpp" />
+    <ClCompile Include="src\util\string_view.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

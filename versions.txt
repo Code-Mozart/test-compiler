@@ -15,7 +15,8 @@
 	
 	2.0			procedures
 	2.1			procedure arguments
-->	2.2			compiler as library
+->	2.2			maintenance
+				compiler as library
 				disassembler
 	2.3			return values
 	2.4			operators ==, !=, >, <=, >=

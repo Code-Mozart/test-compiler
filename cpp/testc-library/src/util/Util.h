@@ -17,10 +17,10 @@ template<typename T>
 using ref = std::shared_ptr<T>;
 
 template <typename T, typename... Args>
-inline constexpr static ref<T> RefTo(Args&&... args) { return std::make_shared<T>(std::forward<Args>(args)...); }
+inline constexpr ref<T> RefTo(Args&&... args) { return std::make_shared<T>(std::forward<Args>(args)...); }
 
 template <typename T, typename U>
-inline constexpr static ref<T> CastTo(U& u) { return std::static_pointer_cast<T>(u); }
+inline constexpr ref<T> CastTo(U& u) { return std::static_pointer_cast<T>(u); }
 
 #define GET_BIT(bits, mask) (bits & mask)
 #define SET_BIT(bits, mask) bits |= mask
@@ -30,3 +30,5 @@ inline constexpr static ref<T> CastTo(U& u) { return std::static_pointer_cast<T>
 #define STRINGIFY2(x) #x
 #define STRINGIFY(x) STRINGIFY2(x)
 #define ASSERT(x) if (!(x)) throw "ASSERTION FAILED AT " __FILE__ ":" STRINGIFY(__LINE__)
+
+#define EXPAND(x) x

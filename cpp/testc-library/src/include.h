@@ -1,4 +1,4 @@
 #pragma once
 
-#include "syntax/Syntax.h"
-#include "syntax/Lexer.h"
+#include "syntax/token.h"
+#include "syntax/lexer.h"
