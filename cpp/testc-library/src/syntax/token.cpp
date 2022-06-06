@@ -34,7 +34,7 @@ namespace testc {
 		}
 	}
 
-	string AsString(Token_Type type) {
+	string as_string(Token_Type type) {
 		switch (type) {
 		case Token_Type::Comma:				return ",";
 		case Token_Type::Semicolon:			return ";";
@@ -62,10 +62,14 @@ namespace testc {
 		
 		case Token_Type::Identifier:
 		case Token_Type::Literal:
-			throw NotSupportedException(to_string(type));
+			throw Not_Supported_Exception(to_string(type));
 		default:
 			MISSING_ENUM(to_string(type));
 		}
+	}
+
+	string to_string(const Token* token) {
+		NOT_IMPL();
 	}
 
 }
