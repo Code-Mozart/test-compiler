@@ -68,7 +68,7 @@ namespace testc {
 		}
 	}
 
-	string to_string(const Token* token) {
+	string to_string(const Token& token) {
 		NOT_IMPL();
 	}
 

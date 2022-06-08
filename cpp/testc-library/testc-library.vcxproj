@@ -140,9 +140,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="src\common\compiler_message.h" />
+    <ClInclude Include="src\common\location.h" />
     <ClInclude Include="src\Exception.h" />
     <ClInclude Include="src\include.h" />
-    <ClInclude Include="src\Location.h" />
+    <ClInclude Include="src\source_info.h" />
     <ClInclude Include="src\syntax\Lexer.h" />
     <ClInclude Include="src\syntax\Token.h" />
     <ClInclude Include="src\util\string_view.h" />

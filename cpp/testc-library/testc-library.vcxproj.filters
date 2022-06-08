@@ -30,10 +30,16 @@
     <ClInclude Include="src\syntax\Token.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\Location.h">
+    <ClInclude Include="src\util\string_view.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\util\string_view.h">
+    <ClInclude Include="src\common\compiler_message.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\common\location.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\source_info.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

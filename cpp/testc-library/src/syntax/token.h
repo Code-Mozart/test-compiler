@@ -2,7 +2,7 @@
 
 #include "util/util.h"
 #include "util/string_view.h"
-#include "location.h"
+#include "common/location.h"
 
 namespace testc {
 
@@ -42,6 +42,6 @@ namespace testc {
 
 	string to_string(Token_Type type);
 	string as_string(Token_Type type);
-	string to_string(const Token* token);
+	string to_string(const Token& token);
 
 }
