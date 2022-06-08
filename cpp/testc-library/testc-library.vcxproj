@@ -144,13 +144,17 @@
     <ClInclude Include="src\common\location.h" />
     <ClInclude Include="src\Exception.h" />
     <ClInclude Include="src\include.h" />
+    <ClInclude Include="src\semantic\operator.h" />
     <ClInclude Include="src\source_info.h" />
+    <ClInclude Include="src\syntax\ast.h" />
     <ClInclude Include="src\syntax\Lexer.h" />
+    <ClInclude Include="src\syntax\Parser.h" />
     <ClInclude Include="src\syntax\Token.h" />
     <ClInclude Include="src\util\string_view.h" />
     <ClInclude Include="src\util\Util.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\semantic\operator.cpp" />
     <ClCompile Include="src\syntax\Lexer.cpp" />
     <ClCompile Include="src\syntax\Token.cpp" />
     <ClCompile Include="src\util\string_view.cpp" />

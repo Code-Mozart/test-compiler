@@ -42,6 +42,15 @@
     <ClInclude Include="src\source_info.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\syntax\Parser.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\syntax\ast.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\semantic\operator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\syntax\Token.cpp">
@@ -51,6 +60,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\util\string_view.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\semantic\operator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

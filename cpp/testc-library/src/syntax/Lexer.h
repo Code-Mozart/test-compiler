@@ -25,7 +25,7 @@ namespace testc {
 		// for now the lexer pre-tokenizes the whole src string:
 
 		const vector<Token> tokens;
-		size_t head;
+		size_t head = 0;
 	};
 
 	// Creates a new lexer and attaches the source code to it.
@@ -34,18 +34,18 @@ namespace testc {
 
 	// #returns: true if the lexer has reached the end of the source string
 	// or false if there are more tokens to read.
-	bool has_reached_end(const Ref<Lexer> lexer);
+	bool has_reached_end(Ref<const Lexer> lexer);
 
 	// Peeks the next token of the attached source string without advancing
 	// the lexer past this token.
 	// #returns: the token it has peeked or nullptr if the lexer reached the end.
-	const Ref<Token> peek(const Ref<Lexer> lexer);
+	Nullable<Ref<const Token>> peek(Ref<const Lexer> lexer);
 
 	// Advances the lexer past the next token to either the next next token or to the end.
 	// #returns: the token token it moved past.
 	// #throws IllegalStateException: if the lexer has already reached the end
 	// before advancing.
-	const Ref<Token> advance(Ref<Lexer> lexer);
+	Ref<const Token> advance(Ref<Lexer> lexer);
 
 	// Advances the lexder past the next token and peeks the token that comes thereafter,
 	// see peek() and see advance().
@@ -53,12 +53,12 @@ namespace testc {
 	// next token is the last token and the lexer reaches the end after advancing.
 	// #throws IllegalStateException: if the lexer has already reached the end
 	// before advancing.
-	const Ref<Token> advance_and_peek(Ref<Lexer> lexer);
+	Nullable<Ref<const Token>> advance_and_peek(Ref<Lexer> lexer);
 
 	// Peeks the next token without advancing the lexer, see peek().
 	// #returns: success and the token it peeked or an error and nullptr
 	// if the lexer reached the end.
-	pair<Compiler_Message, const Ref<Token>> require_peek(const Ref<Lexer> lexer);
+	pair<Compiler_Message, Nullable<Ref<const Token>>> require_peek(Ref<const Lexer> lexer);
 
 	// Advances the lexer and peeks the then next token, see advance_and_peek().
 	// #returns: success and the token it peeked or an error and nullptr
@@ -66,6 +66,6 @@ namespace testc {
 	// has reached the end after advancing.
 	// #throws IllegalStateException : if the lexer has already reached the end
 	// before advancing.
-	pair<Compiler_Message, const Ref<Token>> require_advance_and_peek(Ref<Lexer> lexer);
+	pair<Compiler_Message, Nullable<Ref<const Token>>> require_advance_and_peek(Ref<Lexer> lexer);
 
 }

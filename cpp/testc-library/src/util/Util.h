@@ -36,6 +36,17 @@ using Ref = T*;
 template<typename T>
 using Owner = T*;
 
+template<typename T> struct assert_ptr;
+template<typename T> struct assert_ptr<T*> {
+	using type = T*;
+};
+
+// Use this alias over the raw pointer (T*) to indicate that T is nullable.
+template<typename T>
+using Nullable = typename assert_ptr<T>::type;
+
+using std::to_string;
+
 #define GET_BIT(bits, mask) (bits & mask)
 #define SET_BIT(bits, mask) bits |= mask
 #define CLEAR_BIT(bits, mask) bits &= ~mask
