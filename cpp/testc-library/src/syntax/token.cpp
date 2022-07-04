@@ -1,5 +1,7 @@
 #include "token.h"
 #include "exception.h"
+#include "semantic/operator.h"
+#include "semantic/keyword.h"
 
 namespace testc {
 
@@ -27,11 +29,6 @@ namespace testc {
 	static const string EOF_String				= "EOF";
 	static const string Comma_String			= ",";
 	static const string Semicolon_String		= ";";
-	static const string Var_String				= "var";
-	static const string Proc_String				= "proc";
-	static const string If_String				= "if";
-	static const string Else_String				= "else";
-	static const string While_String			= "while";
 	static const string Assign_String			= "=";
 	static const string LParen_String			= "(";
 	static const string RParen_String			= ")";
@@ -66,7 +63,7 @@ namespace testc {
 		case Token_Type::RBrace:			return RBrace_Type_String;
 
 		default:
-			MISSING_ENUM(to_string(type));
+			MISSING_ENUM(to_string((int)type));
 		}
 	}
 
@@ -90,11 +87,11 @@ namespace testc {
 
 		case Token_Type::End_Of_File:		return EOF_String;
 		
-		case Token_Type::Keyword_Var:		return Var_String;
-		case Token_Type::Keyword_Proc:		return Proc_String;
-		case Token_Type::Keyword_If:		return If_String;
-		case Token_Type::Keyword_Else:		return Else_String;
-		case Token_Type::Keyword_While:		return While_String;
+		case Token_Type::Keyword_Var:		return as_string(Keyword::Variable_Decl);
+		case Token_Type::Keyword_Proc:		return as_string(Keyword::Procedure_Decl);
+		case Token_Type::Keyword_If:		return as_string(Keyword::If);
+		case Token_Type::Keyword_Else:		return as_string(Keyword::Else);
+		case Token_Type::Keyword_While:		return as_string(Keyword::While);
 		
 		case Token_Type::Identifier:
 		case Token_Type::Literal:

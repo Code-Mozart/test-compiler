@@ -16,6 +16,14 @@ namespace testc {
 		// An empty string view which is a string view that is not referencing
 		// any string.
 		static const String_View Empty;
+
+
+		bool operator==(const String_View&) const;
+		// operator==(const string&) const;
+		operator string() const;
 	};
+
+	string operator+(const String_View&, const char*);
+	string operator+(const char*, const String_View&);
 
 }

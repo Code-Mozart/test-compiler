@@ -1,14 +1,15 @@
 #pragma once
 
-#include "util/util.h"
+#include "basic/include.h"
 #include "util/string_view.h"
 #include "common/location.h"
 #include "semantic/operator.h"
 
 namespace testc {
 
+	struct Symbol_Table;
+
 	struct AST_Node;
-	struct AST_Container;
 	struct AST_Procedure;
 	struct AST_Statement;
 	struct AST_Block;
@@ -46,25 +47,22 @@ namespace testc {
 	struct AST_Node {
 		AST_Type type = AST_Type::None;
 		Location location;
+
+		Nullable<Ref<AST_Node>> parent = nullptr;
+		Shared<Symbol_Table> symbols;
 	};
 
-	struct AST_Container : public AST_Node {
-		vector<Owner<AST_Procedure>> procedures;
-		// @placeholder: symbol table
-	};
-	
 	struct AST_Procedure : public AST_Node {
 		String_View identifier;
 		Owner<AST_Block> body;
-		vector<Owner<AST_Declaration>> parameters;
+		List<Owner<AST_Declaration>> parameters;
 	};
 
 	// Exists to ensure stronger C++ type constraints
 	struct AST_Statement : public AST_Node {};
 
 	struct AST_Block : public AST_Statement {
-		vector<Owner<AST_Statement>> statements;
-		// @placeholder: symbol table
+		List<Owner<AST_Statement>> statements;
 	};
 
 	struct AST_Declaration : public AST_Statement {
@@ -91,7 +89,7 @@ namespace testc {
 	struct AST_Call : public AST_Statement {
 		String_View identifier;
 		// @consider: introduce a AST_Arguments node
-		vector<Owner<AST_Expression>> arguments;
+		List<Owner<AST_Expression>> arguments;
 	};
 
 	// Exists to ensure stronger C++ type constraints
@@ -111,7 +109,7 @@ namespace testc {
 		Owner<AST_Expression> rhs;
 	};
 
-	string to_string(AST_Type type);
+	const string& to_string(AST_Type type);
 	string to_string(const AST_Node& node, byte indentations = 0);
 
 }

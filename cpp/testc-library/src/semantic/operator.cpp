@@ -1,5 +1,4 @@
 #include "operator.h"
-
 #include "exception.h"
 
 namespace testc {
@@ -18,7 +17,7 @@ namespace testc {
 		case Operator::Slash:			return Slash_String;
 		case Operator::Less_Than:		return Less_Than_String;
 		default:
-			MISSING_ENUM(to_string((int)op));
+			MISSING_ENUM(to_string(op));
 		}
 	}
 

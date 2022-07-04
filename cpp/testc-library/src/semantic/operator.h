@@ -1,6 +1,6 @@
 #pragma once
 
-#include "util/util.h"
+#include "basic/include.h"
 
 namespace testc {
 
@@ -14,5 +14,6 @@ namespace testc {
 	};
 
 	const string& as_string(Operator op);
+	const string& to_string(Operator op);
 
 }

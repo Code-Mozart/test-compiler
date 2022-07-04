@@ -2,7 +2,7 @@
 <Project>
   <ProjectOutputs>
     <ProjectOutput>
-      <FullPath>C:\dev\test-compiler\cpp\bin\x64-Debug\testc.exe</FullPath>
+      <FullPath>C:\dev\test-compiler\cpp\bin\testc\x64-Debug\testc.exe</FullPath>
     </ProjectOutput>
   </ProjectOutputs>
   <ContentFiles />

@@ -15,7 +15,7 @@
 	
 	2.0			procedures
 	2.1			procedure arguments
-->	2.2			maintenance
+->	2.2			maintenance/refactoring
 				compiler as library
 				disassembler
 	2.3			return values

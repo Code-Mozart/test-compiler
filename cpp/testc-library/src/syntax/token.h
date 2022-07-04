@@ -3,7 +3,6 @@
 #include "util/util.h"
 #include "util/string_view.h"
 #include "common/location.h"
-#include "semantic/operator.h"
 
 namespace testc {
 
@@ -38,10 +37,7 @@ namespace testc {
 		Location location;
 		Token_Type type;
 		String_View text;
-		union {
-			short value;
-			Operator op;
-		};
+		short value;
 	};
 
 	const string& to_string(Token_Type type);
