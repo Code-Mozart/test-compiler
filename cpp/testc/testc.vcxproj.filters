@@ -26,8 +26,5 @@
     <ClInclude Include="src\compiler_options.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="src\file.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
 </Project>

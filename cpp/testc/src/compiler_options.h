@@ -1,6 +1,6 @@
 #pragma once
 
-#include "file.h"
+#include <testclib.h>
 
 struct Compiler_Options {
 	const File source_file;

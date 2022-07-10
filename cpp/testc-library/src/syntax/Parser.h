@@ -45,11 +45,21 @@ namespace testc {
 		Nullable<Owner<T>> node;
 	};
 
+	// #returns:
+	//   whether parsing the token stream to an ast node resulted in a failure or not.
+	template<typename T>
+	inline bool has_failed(const Parser_Result<T>& result) { return result.node == nullptr; }
+
 	template<typename T>
 	struct Parser_Result_Multi {
 		List<Owner<const Compiler_Message>> messages;
 		List<Owner<T>> nodes;
 	};
+
+	// #returns:
+	//   whether parsing the token stream to procedure nodes resulted in a failure or not.
+	template<typename T>
+	inline bool has_failed(const Parser_Result_Multi<T>& result) { return result.nodes.empty(); }
 
 	// use the following procedures to parse the corresponding node from the
 	// token stream

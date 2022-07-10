@@ -1,7 +1,7 @@
 #include "compiler_options.h"
-#include "file.h"
-#include <testclib.h>
+#include <filesystem>
 
+namespace fs = std::filesystem;
 using namespace testc;
 
 Compiler_Options parse_compiler_options(const int argc, const char** argv) {

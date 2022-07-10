@@ -10,5 +10,3 @@
 #define ASSERT(x) if (!(x)) throw "ASSERTION FAILED AT " __FILE__ ":" STRINGIFY(__LINE__)
 
 #define EXPAND(x) x
-
-#define MISSING_ENUM(x) static_assert(false, x)

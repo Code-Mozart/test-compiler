@@ -25,4 +25,10 @@ namespace testc {
     const string& to_string(Severity sev);
     string as_string(const Compiler_Message& msg);
 
+    // const Owner<const Compiler_Message> raise_info();
+
+    // const Owner<const Compiler_Message> raise_warning();
+    
+    const Owner<const Compiler_Message> raise_error(const string& text);
+
 }

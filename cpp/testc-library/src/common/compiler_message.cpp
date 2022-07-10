@@ -17,4 +17,8 @@ namespace testc {
 		return as_string(msg.severity) + append_non_empty(as_string(msg.location)) + append_non_empty(msg.text);
 	}
 
+    const Owner<const Compiler_Message> raise_error(const string& text) {
+		return new Compiler_Message{ Severity::Error, Location{}, text };
+	}
+
 }

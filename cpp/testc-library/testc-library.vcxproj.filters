@@ -75,6 +75,12 @@
     <ClInclude Include="src\basic\macros.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\common\result.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\file_handler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\syntax\Token.cpp">
@@ -96,6 +102,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\common\location.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\file_handler.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

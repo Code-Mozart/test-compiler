@@ -34,12 +34,17 @@
 namespace testc {
 
 	struct Compiler_Message;
+	struct Lexer;
 
 	// Wraps the result of attaching a lexer which could generate a compiler message.
 	struct Attach_Lexer_Result {
 		List<Owner<const Compiler_Message>> messages;
 		Nullable<Owner<Lexer>> lexer;
 	};
+
+	// #returns:
+	//   whether attaching a lexer resulted in a failure or not.
+	inline bool has_failed(const Attach_Lexer_Result& result) { return result.lexer == nullptr; }
 
 	// Wraps the result of a lexer operation that could generate a compiler message.
 	struct Lexer_Result {
@@ -52,7 +57,7 @@ namespace testc {
 
 		// for now the lexer pre-tokenizes the whole src string:
 
-		const vector<Token> tokens;
+		const List<Owner<const Token>> tokens;
 		size_t head = 0;
 	};
 

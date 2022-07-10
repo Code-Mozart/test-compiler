@@ -24,7 +24,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="src\compiler_options.h" />
-    <ClInclude Include="src\file.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>16.0</VCProjectVersion>

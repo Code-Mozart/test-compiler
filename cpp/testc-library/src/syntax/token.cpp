@@ -1,5 +1,4 @@
 #include "token.h"
-#include "exception.h"
 #include "semantic/operator.h"
 #include "semantic/keyword.h"
 
