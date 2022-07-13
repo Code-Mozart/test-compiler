@@ -5,7 +5,7 @@ namespace testc {
 
 	File_Read_Result read_from_file(const Ref<const File> file)
 	{
-		std::ifstream ifs((FILE*)file);
+		std::ifstream ifs(file->c_str());
         if (ifs.is_open()) {
             string content = string(std::istreambuf_iterator<char>(ifs), std::istreambuf_iterator<char>());
             size_t count = std::count(content.begin(), content.end(), '\n') + 1;
@@ -27,7 +27,7 @@ namespace testc {
 	}
 	
 	File_Write_Result write_to_file(const Ref<const File> file, const string& content) {
-		std::ofstream ofs((FILE*)file);
+		std::ofstream ofs(file->c_str());
 		if (ofs.is_open()) {
 			ofs << content;
 			ofs.close();

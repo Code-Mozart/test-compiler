@@ -167,6 +167,7 @@
     <ClInclude Include="src\generator\generator.h" />
     <ClInclude Include="src\generator\instruction.h" />
     <ClInclude Include="include\testclib.h" />
+    <ClInclude Include="src\generator\instruction_writer.h" />
     <ClInclude Include="src\semantic\keyword.h" />
     <ClInclude Include="src\semantic\operator.h" />
     <ClInclude Include="src\semantic\symbol_table.h" />
@@ -183,9 +184,12 @@
     <ClCompile Include="src\common\compiler_message.cpp" />
     <ClCompile Include="src\common\location.cpp" />
     <ClCompile Include="src\file_handler.cpp" />
+    <ClCompile Include="src\generator\generator.cpp" />
+    <ClCompile Include="src\generator\instruction_writer.cpp" />
     <ClCompile Include="src\semantic\keyword.cpp" />
     <ClCompile Include="src\semantic\operator.cpp" />
     <ClCompile Include="src\syntax\Lexer.cpp" />
+    <ClCompile Include="src\syntax\Parser.cpp" />
     <ClCompile Include="src\syntax\Token.cpp" />
     <ClCompile Include="src\util\string_view.cpp" />
   </ItemGroup>

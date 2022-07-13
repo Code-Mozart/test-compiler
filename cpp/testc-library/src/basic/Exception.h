@@ -37,7 +37,9 @@ namespace testc {
 
 	struct Not_Implemented_Exception : public Exception {
 	public:
-		Not_Implemented_Exception(const string& file, const size_t line, const string& msg = "")
+		Not_Implemented_Exception(const string& file, const size_t line)
+			: Exception("\"" + file + "\":" + std::to_string(line) + " Not implemented") {}
+		Not_Implemented_Exception(const string& file, const size_t line, const string& msg)
 			: Exception("\"" + file + "\":" + std::to_string(line) + " Not implemented '" + msg + "'") {}
 	};
 	#define NOT_IMPL() throw Not_Implemented_Exception(__FILE__, __LINE__)

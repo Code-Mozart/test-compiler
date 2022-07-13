@@ -2,6 +2,8 @@
 
 #include <testclib.h>
 
+using namespace testc;
+
 struct Compiler_Options {
 	const File source_file;
 };

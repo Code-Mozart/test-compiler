@@ -1,23 +1,5 @@
 #pragma once
 
-// #include "basic/types.h"
-// #include "basic/macros.h"
-// #include "basic/exception.h"
-// #include "common/location.h"
-// #include "source_info.h"
-// #include "file_handler.h"
-// #include "common/compiler_message.h"
-// #include "syntax/token.h"
-// #include "syntax/lexer.h"
-// #include "syntax/ast.h"
-// #include "syntax/parser.h"
-// #include "semantic/keyword.h"
-// #include "semantic/operator.h"
-// #include "semantic/symbol_table.h"
-// #include "generator/instruction.h"
-// #include "generator/generator.h"
-// #include "generator/instruction_writer.h"
-
 #include "../src/basic/types.h"
 #include "../src/basic/macros.h"
 #include "../src/basic/exception.h"

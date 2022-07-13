@@ -28,40 +28,40 @@ int main(const int argc, const char** argv) {
 		File_Read_Result read_result = read_from_file(&options.source_file);
 		print_messages(read_result.messages);
 		if (has_failed(read_result)) {
-			return;
+			return 1;
 		}
 
 		Attach_Lexer_Result attach_result = attach_lexer_on(read_result.src_info);
 		print_messages(attach_result.messages);
 		if (has_failed(attach_result)) {
-			return;
+			return 1;
 		}
 
 		Parser_Result_Multi parser_result = parse_procedures(attach_result.lexer, nullptr);
 		print_messages(parser_result.messages);
 		if (has_failed(parser_result)) {
-			return;
+			return 1;
 		}
 
 		Generator_Result generator_result = generate_instructions(parser_result.nodes);
 		print_messages(generator_result.messages);
 		if (has_failed(generator_result)) {
-			return;
+			return 1;
 		}
 		Result check_resolved_result = check_nothing_unresolved(generator_result);
 		print_messages(check_resolved_result.messages);
 		if (has_failed(check_resolved_result)) {
-			return;
+			return 1;
 		}
 		
 		string instructions_string = write_instructions(generator_result.instructions);
 		File instructions_file = File(options.source_file).replace_extension("vmc");
-		File_Write_Result write_result = write_to_file(&instructions_file);
+		File_Write_Result write_result = write_to_file(&instructions_file, instructions_string);
 		print_messages(write_result.messages);
 		if (has_failed(write_result)) {
-			return;
+			return 1;
 		}
-		printf("Successfully compiled '%s' to '%s'", options.source_file.c_str(), instructions_file.c_str());
+		printf("Successfully compiled '%s' to '%s'\n", options.source_file.string().c_str(), instructions_file.string().c_str());
 	}
 	catch (const Exception& e) {
 		print_exception(e);
@@ -75,4 +75,6 @@ int main(const int argc, const char** argv) {
 	catch (...) {
 		print_exception("unknown error occured");
 	}
+
+	return 0;
 }
