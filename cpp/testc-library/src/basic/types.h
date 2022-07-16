@@ -3,6 +3,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <unordered_set>
 #include <filesystem>
 
 namespace testc {
@@ -69,6 +70,13 @@ namespace testc {
     // in this map as is might reallocate the elements when modified.
     template<typename K, typename V>
     using Map = std::map<K, V>;
+
+    // Set of T's.
+    // This set owns its elements and is responsible for managing their lifetime.
+    // Therefore it is generally not safe to take a reference/pointer to an element in
+    // in this map as is might reallocate the elements when modified.
+    template<typename T>
+    using Set = std::unordered_set<T>;
 
     using File = std::filesystem::path;
 

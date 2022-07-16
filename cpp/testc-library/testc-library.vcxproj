@@ -158,6 +158,7 @@
   <ItemGroup>
     <ClInclude Include="src\basic\include.h" />
     <ClInclude Include="src\basic\macros.h" />
+    <ClInclude Include="src\basic\memory.h" />
     <ClInclude Include="src\basic\types.h" />
     <ClInclude Include="src\common\compiler_message.h" />
     <ClInclude Include="src\common\location.h" />
@@ -181,6 +182,7 @@
     <ClInclude Include="src\util\string_view.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="src\basic\memory.cpp" />
     <ClCompile Include="src\common\compiler_message.cpp" />
     <ClCompile Include="src\common\location.cpp" />
     <ClCompile Include="src\file_handler.cpp" />
