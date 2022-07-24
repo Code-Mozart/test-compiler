@@ -47,11 +47,17 @@ namespace testc {
 	struct Incorrect_Impl_Exception : public Exception {
 	public:
 		Incorrect_Impl_Exception(const string& file, const size_t line, const string& msg = "")
-			: Exception("\"" + file + "\":" + std::to_string(line) + " found a bug: '" + msg + "'") {
-			NOT_IMPL();
-		}
+			: Exception("\"" + file + "\":" + std::to_string(line) + " found a bug: '" + msg + "'") {}
 	};
 	#define INCORRECT_IMPL(msg) throw Incorrect_Impl_Exception(__FILE__, __LINE__, msg)
-	#define MISSING_ENUM(missing) INCORRECT_IMPL("enum case " + missing + " not handled");
+	#define MISSING_ENUM(missing) INCORRECT_IMPL("enum case " + missing + " not handled")
+	
+	struct Allocation_Exception : public Exception {
+	public:
+		Allocation_Exception(const string& file, const size_t line, const size_t size)
+			: Exception("\"" + file + "\":" + std::to_string(line) + " Failed to allocate "
+				+ std::to_string(size) + " bytes") {}
+	};
+	#define ALLOC_FAILED(size) throw Allocation_Exception(__FILE__, __LINE__, size)
 
 }
