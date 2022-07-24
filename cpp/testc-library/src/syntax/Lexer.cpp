@@ -12,16 +12,6 @@ namespace testc {
     // HEADER PROCEDURE IMPLEMENTATIONS
 
     Attach_Lexer_Result attach_lexer_on(const Source_Info& info) {
-        List<Owner<void>> pointers;
-        for (int i = 0; i < 100; i++) {
-            int bytes = (rand() % 1000) * (rand() % 100);
-            pointers.push_back(allocate((size_t)bytes));
-        }
-        while (!pointers.empty()) {
-            deallocate(pointers.back());
-            pointers.pop_back();
-        }
-
         return { {}, new (allocate<Lexer>()) Lexer{ info, tokenize(&info) } };
     }
 
