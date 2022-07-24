@@ -5,9 +5,11 @@ namespace fs = std::filesystem;
 using namespace testc;
 
 Compiler_Options parse_compiler_options(const int argc, const char** argv) {
+	// @clean up: invalid compiler options are expected, so dont throw an exception
+
 	File file;
 	bool file_set = false;
-	for (int i = 0; i < argc; i++) {
+	for (int i = 1; i < argc; i++) {
 		const string arg = argv[i];
 		ASSERT(!arg.empty());
 		if (arg[0] == '-') {

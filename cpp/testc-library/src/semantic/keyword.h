@@ -15,4 +15,6 @@ namespace testc {
 	const string& as_string(Keyword keyword);
 	inline const string& to_string(const Keyword& keyword) { return as_string(keyword); }
 
+	const List<Keyword>& get_keywords_ordered();
+
 }

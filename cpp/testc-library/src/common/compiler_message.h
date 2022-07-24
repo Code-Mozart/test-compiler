@@ -27,8 +27,9 @@ namespace testc {
 
     // const Owner<const Compiler_Message> raise_info();
 
-    // const Owner<const Compiler_Message> raise_warning();
+    const Owner<const Compiler_Message> raise_warning(const string& text);
     
     const Owner<const Compiler_Message> raise_error(const string& text);
+    const Owner<const Compiler_Message> raise_error(const string& text, Ref<const File> file, ulong line, ulong pos);
 
 }

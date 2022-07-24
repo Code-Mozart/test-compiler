@@ -35,13 +35,13 @@ namespace testc {
 
 	struct Token {
 		Location location;
-		Token_Type type;
+		Token_Type type = Token_Type::End_Of_File;
 		String_View text;
-		short value;
+		short value = SHRT_MIN;
 	};
 
 	const string& to_string(Token_Type type);
 	const string& as_string(Token_Type type);
-	const string& to_string(const Token& token);
+	string to_string(const Token& token);
 
 }

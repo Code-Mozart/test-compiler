@@ -100,8 +100,8 @@ namespace testc {
 		}
 	}
 
-	const string& to_string(const Token& token) {
-		NOT_IMPL();
+	string to_string(const Token& token) {
+		return as_string(token.location) + " " + to_string(token.type);
 	}
 
 }

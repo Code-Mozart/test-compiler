@@ -48,6 +48,10 @@ namespace testc {
     template<typename T>
     using Shared = T*;
 
+    // Non-owning reference to an array of type T.
+    template<typename T>
+    using Array_Ref = T*;
+
     template<typename T> struct assert_ptr;
     template<typename T> struct assert_ptr<T*> {
         using type = T*;

@@ -8,10 +8,10 @@ namespace testc {
 	// without the need for a copy.
 	struct String_View {
 		// A pointer to the start of the substring.
-		const Nullable<Ref<const char>> pStart;
+		Nullable<Array_Ref<const char>> pStart;
 
 		// The length of the referenced substring.
-		const size_t len;
+		size_t len;
 
 		// An empty string view which is a string view that is not referencing
 		// any string.

@@ -14,6 +14,6 @@ namespace testc {
 	};
 
 	const string& as_string(Operator op);
-	const string& to_string(Operator op);
+	inline const string& to_string(Operator op) { return as_string(op); }
 
 }

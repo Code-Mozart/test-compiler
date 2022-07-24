@@ -1,5 +1,6 @@
 #include "compiler_message.h"
 #include "util/string_util.h"
+#include "basic/memory.h"
 
 namespace testc {
 
@@ -35,8 +36,20 @@ namespace testc {
 		return as_string(msg.severity) + append_non_empty(as_string(msg.location)) + append_non_empty(msg.text);
 	}
 
+    const Owner<const Compiler_Message> raise_warning(const string& text) {
+		return new (allocate<Compiler_Message>()) Compiler_Message{ Severity::Warning, Location{}, text };
+	}
+
     const Owner<const Compiler_Message> raise_error(const string& text) {
-		return new Compiler_Message{ Severity::Error, Location{}, text };
+		return new (allocate<Compiler_Message>()) Compiler_Message{ Severity::Error, Location{}, text };
+	}
+	
+    const Owner<const Compiler_Message> raise_error(const string& text, Ref<const File> file, ulong line, ulong pos) {
+		return new (allocate<Compiler_Message>()) Compiler_Message{
+			Severity::Error,
+			Location{ file, line, pos },
+			text
+		};
 	}
 
 }

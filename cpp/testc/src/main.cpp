@@ -59,6 +59,11 @@ int main(const int argc, const char** argv) {
 			return 1;
 		}
 
+		//temp
+		for (const auto& token : attach_result.lexer->tokens) {
+			printf("%s\n", to_string(*token).c_str());
+		}
+
 		Parser_Result_Multi parser_result = parse_procedures(attach_result.lexer, nullptr);
 		print_messages(parser_result.messages);
 		if (has_failed(parser_result)) {
