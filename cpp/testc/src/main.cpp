@@ -4,11 +4,11 @@
 using namespace testc;
 
 void print_exception(const std::exception& e) {
-	printf((string("[EXCEPTION] ") + e.what()).c_str());
+	printf("%s\n", (string("[EXCEPTION] ") + e.what()).c_str());
 }
 
 void print_exception(const string& msg) {
-	printf((string("[EXCEPTION] ") + msg).c_str());
+	printf("%s\n", (string("[EXCEPTION] ") + msg).c_str());
 }
 
 void print_message(const Compiler_Message& msg) {
@@ -21,6 +21,26 @@ void print_messages(const List<Ref<const Compiler_Message>>& messages) {
 	}
 }
 
+void print_mem_stats() {
+	const Memory_Metrics& mm = get_memory_metrics();
+
+	printf("-- MEMORY METRICS ----------------------\n");
+	printf("allocations         %zu\n", mm.total_allocations);
+	printf("deallocations       %zu\n", mm.total_deallocations);
+	printf("system allocations  %zu\n",mm.system_allocations);
+	printf("                    %.2f%% of all allocs\n",
+		((float)mm.system_allocations / (float)mm.total_allocations * 100.0f));
+	printf("system memory       %zu bytes\n", mm.total_system_memory);
+	printf("memory used         %zu bytes\n", mm.total_memory_used);
+	printf("                    %.2f%%\n",
+		((float)mm.total_memory_used / (float)mm.total_system_memory * 100.0f));
+	printf("----------------------------------------\n");
+}
+
+void on_exit() {
+	print_mem_stats();
+}
+
 int main(const int argc, const char** argv) {
 	try {
 		Compiler_Options options = parse_compiler_options(argc, argv);
@@ -28,29 +48,34 @@ int main(const int argc, const char** argv) {
 		File_Read_Result read_result = read_from_file(&options.source_file);
 		print_messages(read_result.messages);
 		if (has_failed(read_result)) {
+			on_exit();
 			return 1;
 		}
 
 		Attach_Lexer_Result attach_result = attach_lexer_on(read_result.src_info);
 		print_messages(attach_result.messages);
 		if (has_failed(attach_result)) {
+			on_exit();
 			return 1;
 		}
 
 		Parser_Result_Multi parser_result = parse_procedures(attach_result.lexer, nullptr);
 		print_messages(parser_result.messages);
 		if (has_failed(parser_result)) {
+			on_exit();
 			return 1;
 		}
 
 		Generator_Result generator_result = generate_instructions(parser_result.nodes);
 		print_messages(generator_result.messages);
 		if (has_failed(generator_result)) {
+			on_exit();
 			return 1;
 		}
 		Result check_resolved_result = check_nothing_unresolved(generator_result);
 		print_messages(check_resolved_result.messages);
 		if (has_failed(check_resolved_result)) {
+			on_exit();
 			return 1;
 		}
 		
@@ -59,6 +84,7 @@ int main(const int argc, const char** argv) {
 		File_Write_Result write_result = write_to_file(&instructions_file, instructions_string);
 		print_messages(write_result.messages);
 		if (has_failed(write_result)) {
+			on_exit();
 			return 1;
 		}
 		printf("Successfully compiled '%s' to '%s'\n", options.source_file.string().c_str(), instructions_file.string().c_str());
@@ -76,5 +102,6 @@ int main(const int argc, const char** argv) {
 		print_exception("unknown error occured");
 	}
 
+	on_exit();
 	return 0;
 }

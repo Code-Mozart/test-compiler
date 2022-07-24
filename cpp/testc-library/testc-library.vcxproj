@@ -159,6 +159,7 @@
     <ClInclude Include="src\basic\include.h" />
     <ClInclude Include="src\basic\macros.h" />
     <ClInclude Include="src\basic\memory.h" />
+    <ClInclude Include="src\basic\memory_metrics.h" />
     <ClInclude Include="src\basic\types.h" />
     <ClInclude Include="src\common\compiler_message.h" />
     <ClInclude Include="src\common\location.h" />

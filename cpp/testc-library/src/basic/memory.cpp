@@ -2,6 +2,7 @@
 // the memory interface.
 
 #include "memory.h"
+#include "memory_metrics.h"
 #include <algorithm>
 
 namespace testc {
@@ -9,6 +10,8 @@ namespace testc {
     constexpr size_t INITIAL_BLOCK_COUNT = 1;
     constexpr size_t DEFAULT_BLOCK_SIZE = 0xFFFF;
     constexpr size_t UNUSED_MEMORY_THRESHOLD = 0xFF;
+
+    Memory_Metrics mem_stats;
 
     struct Memory_Block {
         size_t size = 0;
@@ -37,6 +40,8 @@ namespace testc {
                 ALLOC_FAILED(DEFAULT_BLOCK_SIZE);
             }
         }
+        mem_stats.system_allocations += INITIAL_BLOCK_COUNT;
+        mem_stats.total_system_memory += INITIAL_BLOCK_COUNT * DEFAULT_BLOCK_SIZE;
 
         mem.initialized = true;
     }
@@ -57,6 +62,10 @@ namespace testc {
     }
 
 
+    const Memory_Metrics& get_memory_metrics() {
+        return mem_stats;
+    }
+
 	Owner<void> allocate(size_t size) {
         // 1. check if initialized
         if (!mem.initialized) {
@@ -66,7 +75,8 @@ namespace testc {
         // 2. find a suitable existing memory block
         for (Ref<Memory_Block>& block : mem.blocks) {
             if (remaining_size(block) >= size) {
-                printf("ALLOCATE used existing block\n");
+                mem_stats.total_memory_used += size;
+                mem_stats.total_allocations++;
                 void* ptr = block->head;
                 block->head += size;
                 block->allocations++;
@@ -80,7 +90,10 @@ namespace testc {
         if (!begin) {
             ALLOC_FAILED(block_size);
         }
-        printf("ALLOCATE created a new block\n");
+        mem_stats.total_system_memory += block_size;
+        mem_stats.total_memory_used += size;
+        mem_stats.system_allocations++;
+        mem_stats.total_allocations++;
         mem.blocks.push_back(::new Memory_Block{ block_size, 1, 0, begin, begin + size });
         sort_blocks();
         return begin;
@@ -92,6 +105,7 @@ namespace testc {
             Ref<Memory_Block> block = mem.blocks[i];
             if (ptr >= block->begin && ptr < (block->begin + block->size)) {
                 // 2. check if the memory block can be deallocated
+                mem_stats.total_deallocations++;
                 block->deallocations++;
                 ASSERT(block->deallocations <= block->allocations);
                 if ((block->deallocations == block->allocations) && (remaining_size(block) <= UNUSED_MEMORY_THRESHOLD)) {

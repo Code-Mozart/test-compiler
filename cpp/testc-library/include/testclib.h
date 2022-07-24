@@ -3,6 +3,7 @@
 #include "../src/basic/types.h"
 #include "../src/basic/macros.h"
 #include "../src/basic/exception.h"
+#include "../src/basic/memory_metrics.h"
 #include "../src/common/location.h"
 #include "../src/source_info.h"
 #include "../src/file_handler.h"

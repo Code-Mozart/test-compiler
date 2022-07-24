@@ -87,6 +87,9 @@
     <ClInclude Include="src\basic\memory.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\basic\memory_metrics.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="src\syntax\Token.cpp">
