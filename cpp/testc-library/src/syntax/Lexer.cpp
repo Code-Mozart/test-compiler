@@ -38,15 +38,24 @@ namespace testc {
     }
 
     bool has_reached_end(Ref<const Lexer> lexer) {
-        NOT_IMPL();
+        return lexer->head == lexer->tokens.size();
     }
 
 	Nullable<Ref<const Token>> peek(Ref<const Lexer> lexer) {
-        NOT_IMPL();
+        ASSERT(lexer->head >= 0);
+        ASSERT(lexer->head < lexer->tokens.size());
+        return lexer->tokens[lexer->head];
     }
 
 	Ref<const Token> advance(Ref<Lexer> lexer) {
-        NOT_IMPL();
+        if (lexer->head >= lexer->tokens.size()) {
+            throw Illegal_State_Exception("The tokenizer already reached the end");
+        }
+        else {
+            Ref<const Token> token = lexer->tokens[lexer->head];
+            lexer->head++;
+            return token;
+        }
     }
 
     Nullable<Ref<const Token>> advance_and_peek(Ref<Lexer> lexer) {
@@ -54,11 +63,21 @@ namespace testc {
     }
 
     Lexer_Result require_peek(Ref<const Lexer> lexer) {
-        NOT_IMPL();
+        Nullable<Ref<const Token>> token = peek(lexer);
+        if (token) {
+            return Lexer_Result{ {}, token };
+        }
+        else {
+            return Lexer_Result{
+                { raise_error("unexpected EOF", lexer->tokens.back()->location) },
+                nullptr
+            };
+        }
     }
 
     Lexer_Result require_advance_and_peek(Ref<Lexer> lexer) {
-        NOT_IMPL();
+        advance(lexer);
+        return require_peek(lexer);
     }
 
 

@@ -25,5 +25,6 @@ namespace testc {
 
 	string operator+(const String_View&, const char*);
 	string operator+(const char*, const String_View&);
+	string operator+(const string&, const String_View&);
 
 }

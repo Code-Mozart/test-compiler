@@ -179,6 +179,7 @@
     <ClInclude Include="src\syntax\Lexer.h" />
     <ClInclude Include="src\syntax\Parser.h" />
     <ClInclude Include="src\syntax\Token.h" />
+    <ClInclude Include="src\util\list_util.h" />
     <ClInclude Include="src\util\string_util.h" />
     <ClInclude Include="src\util\string_view.h" />
   </ItemGroup>
@@ -191,6 +192,9 @@
     <ClCompile Include="src\generator\instruction_writer.cpp" />
     <ClCompile Include="src\semantic\keyword.cpp" />
     <ClCompile Include="src\semantic\operator.cpp" />
+    <ClCompile Include="src\semantic\symbol_table.cpp" />
+    <ClCompile Include="src\semantic\type_checker.cpp" />
+    <ClCompile Include="src\syntax\ast.cpp" />
     <ClCompile Include="src\syntax\Lexer.cpp" />
     <ClCompile Include="src\syntax\Parser.cpp" />
     <ClCompile Include="src\syntax\Token.cpp" />

@@ -1,9 +1,3 @@
-#pragma once
-
-#include "basic/include.h"
-#include "source_info.h"
-#include "syntax/token.h"
-
 // Interface for a lexer (lexical analyzer). The lexer analyzes source code
 // and generates corresponding tokens. Each lexer is only ever attached on
 // one source string.
@@ -31,6 +25,12 @@
 //     v
 //    instructions
 
+#pragma once
+
+#include "basic/include.h"
+#include "source_info.h"
+#include "syntax/token.h"
+
 namespace testc {
 
 	struct Compiler_Message;
@@ -51,6 +51,10 @@ namespace testc {
 		List<Owner<const Compiler_Message>> messages;
 		Nullable<Ref<const Token>> token;
 	};
+	
+	// #returns:
+	//   whether peeking a token resulted in a failure or not.
+	inline bool has_failed(const Lexer_Result& result) { return result.token == nullptr; }
 
 	struct Lexer {
 		const Source_Info info;
@@ -83,16 +87,16 @@ namespace testc {
 	// Advances the lexer past the next token to either the next next token or to the end.
 	// #returns:
 	//   the token token it moved past.
-	// #throws IllegalStateException:
+	// #throws Illegal_State_Exception:
 	//   if the lexer has already reached the end before advancing.
 	Ref<const Token> advance(Ref<Lexer> lexer);
 
-	// Advances the lexder past the next token and peeks the token that comes thereafter,
+	// Advances the lexer past the next token and peeks the token that comes thereafter,
 	// see peek() and see advance().
 	// #returns:
 	//   the token that comes after the next token or nullptr if the next token is
 	//   the last token and the lexer reaches the end after advancing.
-	// #throws IllegalStateException:
+	// #throws Illegal_State_Exception:
 	//   if the lexer has already reached the end before advancing.
 	Nullable<Ref<const Token>> advance_and_peek(Ref<Lexer> lexer);
 
@@ -107,7 +111,7 @@ namespace testc {
 	//   the token it peeked or nullptr and a corresponding error if the next token
 	//   before advancing is the last token and the lexer has reached the end
 	//   after advancing.
-	// #throws IllegalStateException:
+	// #throws Illegal_State_Exception:
 	//   if the lexer has already reached the end before advancing.
 	Lexer_Result require_advance_and_peek(Ref<Lexer> lexer);
 

@@ -101,7 +101,7 @@ namespace testc {
 	}
 
 	string to_string(const Token& token) {
-		return as_string(token.location) + " " + to_string(token.type);
+		return as_string(token.location) + " " + to_string(token.type) + " '" + token.text + "'";
 	}
 
 }

@@ -48,7 +48,7 @@ namespace testc {
     template<typename T>
     using Shared = T*;
 
-    // Non-owning reference to an array of type T.
+    // Non-owning reference to an array of type
     template<typename T>
     using Array_Ref = T*;
 

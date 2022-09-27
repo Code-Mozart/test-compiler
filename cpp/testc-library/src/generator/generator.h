@@ -1,9 +1,3 @@
-#pragma once
-
-#include "basic/include.h"
-#include "common/result.h"
-#include "generator/instruction.h"
-
 // Interface for the code generator which takes the previously assembled
 // informations in the form of the abstract syntax tree and generates
 // virtual machine instructions for it.
@@ -24,9 +18,16 @@
 //     v
 //    instructions
 
+#pragma once
+
+#include "basic/include.h"
+#include "common/result.h"
+#include "generator/instruction.h"
+
 namespace testc {
 
     struct Symbol;
+    struct Symbol_Table;
     struct AST_Node;
     struct AST_Procedure;
 
@@ -48,13 +49,13 @@ namespace testc {
 	inline bool has_failed(const Generator_Result& result) { return false; }
 
     // Generates virtual machine instructions for the given node.
-    Generator_Result generate_instructions(Ref<AST_Node> node);
+    Generator_Result generate_instructions(Ref<AST_Node> node, Ref<const Symbol_Table> symbols);
 
     // Generates virtual machine instructions for the given procedure nodes.
     // The generated instructions of the different nodes are simply concatenated
     // in the resulting list. All dependencies between the generated instruction
     // of the nodes will be resolved.
-    Generator_Result generate_instructions(const List<Ref<AST_Procedure>>& procedures);
+    Generator_Result generate_instructions(const List<Ref<AST_Procedure>>& procedures, Ref<const Symbol_Table> symbols);
 
     // Checks if there are unresolved dependencies and generates corresponding errors
     // if so.

@@ -14,6 +14,9 @@ namespace testc {
 		else if (this->len != other.len) {
 			return false;
 		}
+		else if (this->pStart == other.pStart) {
+			return true;
+		}
 		else {
 			return strncmp(this->pStart, other.pStart, len);
 		}
@@ -29,6 +32,10 @@ namespace testc {
 
 	string operator+(const char* cstr, const String_View& view) {
 		return cstr + view.operator string();
+	}
+	
+	string operator+(const string& str, const String_View& view) {
+		return str + view.operator string();
 	}
 
 }

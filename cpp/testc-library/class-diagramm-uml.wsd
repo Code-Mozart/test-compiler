@@ -1,0 +1,45 @@
+@startuml "testclib"
+class Location
+class Source_Info
+class Compiler_Message
+Compiler_Message o-- Location
+
+class Lexer
+class Token
+enum Token_Type
+Token o-- Token_Type
+Token o-- Location
+Lexer o-- "0..*" Token
+Lexer o-- Source_Info
+Lexer --> Compiler_Message
+
+enum AST_Type
+class AST_Node
+class Symbol_Table
+AST_Node o-- AST_Type
+AST_Node o-- Location
+AST_Node o-- "parent" AST_Node
+AST_Node o-- Symbol_Table
+
+class Symbol
+enum Symbol_Type
+object symbols
+object unresolved_proc_calls
+object unresolved_value_usages
+Symbol o-- Symbol_Type
+Symbol o-- "0..1\ndefinition" AST_Node
+Symbol o-- "0..*\nusage" AST_Node
+Symbol_Table o-- "owner" AST_Node
+Symbol_Table o-- symbols
+symbols o-- "0..*\nkey" Symbol_Type
+symbols o-- "0..*\nvalue" Symbol
+Symbol_Table o-- unresolved_proc_calls
+Symbol_Table o-- unresolved_value_usages
+unresolved_proc_calls o-- "0..*\nusage" AST_Node
+unresolved_value_usages o-- "0..*\nusage" AST_Node
+class Parser
+Parser --> Lexer
+Parser --> AST_Node
+Parser --> Compiler_Message
+
+@enduml

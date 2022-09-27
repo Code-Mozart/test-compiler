@@ -48,7 +48,8 @@ namespace testc {
 		AST_Type type = AST_Type::None;
 		Location location;
 
-		Nullable<Ref<AST_Node>> parent = nullptr;
+		// the symbol table containing all symbols of this node and its child nodes
+		// when they don't have their own symbol table.
 		Shared<Symbol_Table> symbols;
 	};
 
@@ -111,5 +112,11 @@ namespace testc {
 
 	const string& to_string(AST_Type type);
 	string to_string(const AST_Node& node, byte indentations = 0);
+
+	// destroys the node and clean's up its members.
+	void destroy(Owner<AST_Procedure> node);
+	void destroy(Owner<AST_Block> node);
+	void destroy(Owner<AST_Statement> node);
+	void destroy(Owner<AST_Call> node);
 
 }

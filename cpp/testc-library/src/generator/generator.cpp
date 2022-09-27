@@ -26,11 +26,11 @@ namespace testc {
 
     // Generate Instructions
 
-    Generator_Result generate_instructions(Ref<AST_Node> node) {
+    Generator_Result generate_instructions(Ref<AST_Node> node, Ref<const Symbol_Table> symbols) {
         NOT_IMPL();
     }
 
-    Generator_Result generate_instructions(const List<Ref<AST_Procedure>>& procedures) {
+    Generator_Result generate_instructions(const List<Ref<AST_Procedure>>& procedures, Ref<const Symbol_Table> symbols) {
         NOT_IMPL();
     }
 

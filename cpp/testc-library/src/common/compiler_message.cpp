@@ -43,6 +43,14 @@ namespace testc {
     const Owner<const Compiler_Message> raise_error(const string& text) {
 		return new (allocate<Compiler_Message>()) Compiler_Message{ Severity::Error, Location{}, text };
 	}
+
+    const Owner<const Compiler_Message> raise_error(const string& text, const Location& location) {
+		return new (allocate<Compiler_Message>()) Compiler_Message{
+			Severity::Error,
+			Location{ location.filepath, location.line, location.pos },
+			text
+		}; 
+	}
 	
     const Owner<const Compiler_Message> raise_error(const string& text, Ref<const File> file, ulong line, ulong pos) {
 		return new (allocate<Compiler_Message>()) Compiler_Message{

@@ -64,14 +64,30 @@ int main(const int argc, const char** argv) {
 			printf("%s\n", to_string(*token).c_str());
 		}
 
-		Parser_Result_Multi parser_result = parse_procedures(attach_result.lexer, nullptr);
+		Owner<Symbol_Table> global_context = create_symbol_table();
+		Parser_Result_Multi parser_result = parse_procedures(attach_result.lexer, global_context);
 		print_messages(parser_result.messages);
 		if (has_failed(parser_result)) {
 			on_exit();
 			return 1;
 		}
 
-		Generator_Result generator_result = generate_instructions(parser_result.nodes);
+		Result resolve_references_result = resolve_references(parser_result.nodes, global_context);
+		print_messages(resolve_references_result.messages);
+		if (has_failed(resolve_references_result)) {
+			on_exit();
+			return 1;
+		}
+		for (Ref<AST_Procedure> proc : parser_result.nodes) {
+			Result type_check_result = type_check(proc);
+			print_messages(type_check_result.messages);
+			if (has_failed(type_check_result)) {
+				on_exit();
+				return 1;
+			}
+		}
+
+		Generator_Result generator_result = generate_instructions(parser_result.nodes, global_context);
 		print_messages(generator_result.messages);
 		if (has_failed(generator_result)) {
 			on_exit();
@@ -93,6 +109,8 @@ int main(const int argc, const char** argv) {
 			return 1;
 		}
 		printf("Successfully compiled '%s' to '%s'\n", options.source_file.string().c_str(), instructions_file.string().c_str());
+
+		//  @missing: cleanup/relasing resources
 	}
 	catch (const Exception& e) {
 		print_exception(e);

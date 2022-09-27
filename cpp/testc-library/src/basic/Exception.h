@@ -20,6 +20,12 @@ namespace testc {
 			: Exception(STRINGIFY(Invalid_Argument_Exception), msg) {}
 	};
 
+	struct Illegal_State_Exception : public Exception {
+	public:
+		Illegal_State_Exception(const string& msg)
+			: Exception(STRINGIFY(Illegal_State_Exception), msg) {}
+	};
+
 	struct Nullptr_Exception : public Exception {
 	public:
 		Nullptr_Exception(const string& msg = "")

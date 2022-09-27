@@ -1,0 +1,58 @@
+ SYMBOL STRUCTURE										SOURCE CODE						AST NODES AND THEIR SYMBOL TABLES
+
+[Symbol Table "global"]
+	Symbol/proc "hello"									proc hello(						ast_proc "hello": Symbol Table "global"
+	[Symbol Table "params"]
+		Symbol/value "alpha"								var alpha,					ast_decl "alpha": Symbol Table "params"
+		Symbol/value "beta"									var beta					ast_decl "beta": Symbol Table "params"
+														) {
+		[Symbol Table "body"]
+			Symbol/value "sum"								var sum =					ast_decl "sum": Symbol Table "body"
+			Reference/value "alpha"								alpha +					ast_var "alpha": Symbol Table "body"
+			Reference/value "beta"								beta;					ast_var "beta": Symbol Table "body"
+														}
+													
+	Symbol/proc "main"									proc main(						ast_proc "hello": Symbol Table "global"
+	[Symbol Table "params"]
+														) {
+		[Symbol Table "body"]
+			Symbol/value "arg1"								var arg1 = 1;				ast_decl "arg1": Symbol Table "body"
+				Reference/value "arg1"						if (arg1 < 10) {			ast_if: Symbol Table "body", ast_var "arg1": Symbol Table "body", …
+				[Symbol Table "if body"]
+					Reference/proc "hello"						hello(					ast_call "hello": Symbol Table "if body"
+					Reference/value "arg1"							arg1, 2);			ast_var "arg1": Symbol Table "if body"
+															}
+				[Symbol Table "else body"]					else {
+					Reference/proc "print"						print(					ast_call "print": Symbol Table "else body"
+					Reference/var "arg1"							arg1);				ast_var "arg1": Symbol Table "else body"
+															}
+														}
+
+=> Each symbol knows only the above
+=> The type checker/reference resolver sorts the symbol structure
+
+?? Shouldnt the nodes only know a symbol to ensure the order of knowledge?
+=> maybe value symbols remember their position within their respective symbol table
+=>
+		SYMBOL
+			identifier						"abc"
+			type							value
+			position (only value symbols)	3
+			table							->Symbol Table "xy"
+			definition/node					->AST_Decl "var abc"
+			usages							{
+												->AST_Var 19:23
+												->AST_Var 59:2
+											}
+		
+		SYMBOL TABLE
+			parent							->Symbol Table "pq"
+			symbols (if doubly linked)		{
+												->Symbol "abc"
+												->Symbol "foo"
+											}
+			unresolved value references		{
+												"abc": { ->AST_Var 12:13 }
+												"efg": { ->AST_Var 78:146 }
+											}
+			unresolved proc references		{ "foo": { ->AST_Call 1:23 } }
